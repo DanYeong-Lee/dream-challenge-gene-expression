@@ -11,5 +11,5 @@ wandb:
   log_model: False
   prefix: ""
   job_type: "train"
-  group: ""
+  group: ${name}
   tags: []
