@@ -5,7 +5,7 @@ from sklearn.model_selection import KFold
 import torch
 from torch.utils.data import Dataset, DataLoader
 from pytorch_lightning import LightningDataModule
-from src.datamodules.components.dataset import MyDataset
+from src.datamodules.components.dataset import MyDataset, get_len
 
 
     
@@ -27,7 +27,7 @@ class MyDataModule(LightningDataModule):
 
     def setup(self, stage=None):
         if stage == "fit" or stage == None:
-            train_length = get_len(self.train_dir)
+            train_length = get_len(self.hparams.train_dir)
             kfold = KFold(n_splits=5, shuffle=True, random_state=123456789)
             for i, (train_idx, val_idx) in enumerate(kfold.split(range(train_length))):
                 if i == self.hparams.fold:

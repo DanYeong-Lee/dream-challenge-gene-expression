@@ -1,38 +1,3 @@
-from torch import nn
-
-
-class SimpleDenseNet(nn.Module):
-    def __init__(
-        self,
-        input_size: int = 784,
-        lin1_size: int = 256,
-        lin2_size: int = 256,
-        lin3_size: int = 256,
-        output_size: int = 10,
-    ):
-        super().__init__()
-
-        self.model = nn.Sequential(
-            nn.Linear(input_size, lin1_size),
-            nn.BatchNorm1d(lin1_size),
-            nn.ReLU(),
-            nn.Linear(lin1_size, lin2_size),
-            nn.BatchNorm1d(lin2_size),
-            nn.ReLU(),
-            nn.Linear(lin2_size, lin3_size),
-            nn.BatchNorm1d(lin3_size),
-            nn.ReLU(),
-            nn.Linear(lin3_size, output_size),
-        )
-
-    def forward(self, x):
-        batch_size, channels, width, height = x.size()
-
-        # (batch, 1, width, height) -> (batch, 1*width*height)
-        x = x.view(batch_size, -1)
-
-        return self.model(x)
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -99,14 +64,15 @@ class ConcatedConv(nn.Module):
 class ConvBlock(nn.Module):
     def __init__(
         self,
-        fwd_conv: nn.Module,
-        rev_conv: nn.Module,
-        cat_conv: nn.Module
+        strand_out_dim: int = 256,
+        strand_kernel_size: int = 30,
+        concat_out_dim: int = 64,
+        concat_kernel_size: int = 30
     ):
         super().__init__()
-        self.fwd_conv = fwd_conv
-        self.rev_conv = rev_conv
-        self.cat_conv = cat_conv
+        self.fwd_conv = StrandSpecificConv(strand_out_dim, strand_kernel_size)
+        self.rev_conv = StrandSpecificConv(strand_out_dim, strand_kernel_size)
+        self.cat_conv = ConcatedConv(strand_out_dim, concat_out_dim, concat_kernel_size)
         
     def forward(self, fwd_x, rev_x):
         # Input size: (N, C, L) x 2
@@ -153,7 +119,7 @@ class LSTMBlock(nn.Module):
         self,
         input_dim: int = 64, 
         hidden_dim: int = 8, 
-        dropoutL float = 0.05):
+        dropout: float = 0.05):
         super().__init__()
         self.lstm = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim, bidirectional=True)
         self.dropout = nn.Dropout(dropout)

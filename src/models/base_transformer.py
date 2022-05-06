@@ -1,13 +1,10 @@
 from typing import Any, List
 
 import torch
+import torch.nn as nn
 from pytorch_lightning import LightningModule
-from torchmetrics import MaxMetric
-from torchmetrics.classification.accuracy import Accuracy
+from torchmetrics import MaxMetric, PearsonCorrCoef, SpearmanCorrCoef
 
-from src.models.components.layers import *
-
-    
     
 class BaseTransformer(LightningModule):
     def __init__(self, 

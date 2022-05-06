@@ -1,0 +1,29 @@
+_target_: src.models.base_transformer.BaseTransformer
+lr: 1e-3
+weight_decay: 1e-5
+
+cnn:
+  _target_: src.models.components.layers.ConvBlock
+  strand_out_dim: 256
+  strand_kernel_size: 30
+  concat_out_dim: 64
+  concat_kernel_size: 30
+
+transformer:
+  _target_: src.models.components.layers.TransformerBlock
+  d_model: 64
+  nhead: 8
+  dim_feedforward: 8
+  num_layers: 2
+  
+lstm:
+  _target_: src.models.components.layers.LSTMBlock
+  input_dim: 64
+  hidden_dim: 8
+  dropout: 0.05
+
+mlp:
+  _target_: src.models.components.layers.MLPBlock
+  input_dim: 1760
+  hidden_dim: 64
+  dropout: 0.05
