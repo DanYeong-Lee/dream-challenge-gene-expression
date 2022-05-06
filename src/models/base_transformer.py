@@ -75,6 +75,10 @@ class BaseTransformer(LightningModule):
         
         return loss
     
+    def training_step_end(self, outputs):
+        self.train_spearman.reset()
+        self.train_pearson.reset()
+    
     def validation_step(self, batch, batch_idx):
         loss, preds, targets = self.step(batch)
         
@@ -90,10 +94,15 @@ class BaseTransformer(LightningModule):
         spearman = self.val_spearman.compute()
         pearson = self.val_pearson.compute()
         
+        # log best metric
         self.val_spearman_best.update(spearman)
         self.val_pearson_best.update(pearson)
         self.log("val/spearman_best", self.val_spearman_best.compute(), on_epoch=True, prog_bar=True)
         self.log("val/pearson_best", self.val_pearson_best.compute(), on_epoch=True, prog_bar=True)
+        
+        # reset val metrics
+        self.val_spearman.reset()
+        self.val_pearson.reset()
         
     def test_step(self, batch, batch_idx):
         loss, preds, targets = self.step(batch)
