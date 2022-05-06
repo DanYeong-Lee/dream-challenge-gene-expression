@@ -52,3 +52,6 @@ seed: 42
 # default name for the experiment, determines logging folder path
 # (you can overwrite this name in experiment configs)
 name: "default"
+
+# used for K-fold cross-validation
+fold: 0
