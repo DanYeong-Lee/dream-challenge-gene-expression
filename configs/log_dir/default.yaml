@@ -2,7 +2,7 @@
 
 hydra:
   run:
-    dir: logs/experiments/runs/${name}
+    dir: logs/experiments/runs/${name}/fold${fold}
   sweep:
-    dir: logs/experiments/multiruns/${name}
+    dir: logs/experiments/multiruns/${name}/fold${fold}
     subdir: ${hydra.job.num}
