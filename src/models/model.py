@@ -6,22 +6,16 @@ from pytorch_lightning import LightningModule
 from torchmetrics import MaxMetric, PearsonCorrCoef, SpearmanCorrCoef
 
     
-class BaseTransformer(LightningModule):
+class MainNet(LightningModule):
     def __init__(self, 
-                 cnn: nn.Module,
-                 transformer: nn.Module,
-                 lstm: nn.Module,
-                 mlp: nn.Module,
+                 net: nn.Module,
                  lr: float = 1e-3,
                  weight_decay: float = 1e-5
                 ):
         super().__init__()
-        self.save_hyperparameters(ignore=["cnn", "transformer", "lstm", "mlp"])
+        self.save_hyperparameters(ignore=["net"])
         
-        self.cnn = cnn
-        self.transformer = transformer
-        self.lstm = lstm
-        self.mlp = mlp
+        self.net = net
         
         self.criterion = nn.MSELoss()
         
@@ -38,17 +32,8 @@ class BaseTransformer(LightningModule):
         self.val_pearson_best = MaxMetric()
         
         
-    def forward(self, fwd_x, rev_x):
-        # Input size: (N, L, C) x 2
-        fwd_x, rev_x = fwd_x.permute(0, 2, 1), rev_x.permute(0, 2, 1)  # (N, C, L) x 2
-        h = self.cnn(fwd_x, rev_x)  # (N, C, L)
-        h = h.permute(2, 0, 1)  # (L, N, C)
-        h = self.transformer(h)  # (L, N, C)
-        h = self.lstm(h)  # (L, N, C)
-        h = h.permute(1, 0, 2)  # (N, L, C)
-        h = self.mlp(h)  # (N)
-        
-        return h
+    def forward(self, fwd_x, rev_x):        
+        return self.net(fwd_x, rev_x)
     
     def on_train_start(self):
         # by default lightning executes validation step sanity checks before training starts,

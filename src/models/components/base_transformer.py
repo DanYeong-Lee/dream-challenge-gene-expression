@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+
 ###-------------------###
 ### Convolution Block ###
 ###-------------------###
@@ -9,7 +10,7 @@ import torch.nn.functional as F
 class StrandSpecificConv(nn.Module):
     def __init__(
         self, 
-        out_channels: int =256, 
+        out_channels: int = 256, 
         kernel_size: int = 30
     ):
         super().__init__()
@@ -161,3 +162,42 @@ class MLPBlock(nn.Module):
         x = self.main(x).squeeze()
         
         return x
+
+
+
+###-------------------------###
+###  Main Transformer model ###
+###-------------------------###
+    
+class BaseTransformer(nn.Module):
+    def __init__(
+        self,
+        strand_out_dim: int = 256, 
+        strand_kernel_size: int = 30,
+        concat_kernel_size: int = 30,
+        d_model: int = 64,
+        nhead: int = 8,
+        trfm_mlp_dim: int = 8,
+        trfm_layers: int = 2,
+        lstm_hidden_dim: int = 8,
+        mlp_hidden_dim: int = 64,
+        dropout: float = 0.05
+    ):
+        super().__init__()
+        
+        self.cnn = ConvBlock(strand_out_dim, strand_kernel_size, d_model, concat_kernel_size)
+        self.transformer = TransformerBlock(d_model, nhead, trfm_mlp_dim, trfm_layers)
+        self.lstm = LSTMBlock(d_model, lstm_hidden_dim, dropout)
+        self.mlp = MLPBlock(110 * lstm_hidden_dim * 2, mlp_hidden_dim, dropout)
+        
+    def forward(self, fwd_x, rev_x):
+        # Input size: (N, L, C) x 2
+        fwd_x, rev_x = fwd_x.permute(0, 2, 1), rev_x.permute(0, 2, 1)  # (N, C, L) x 2
+        h = self.cnn(fwd_x, rev_x)  # (N, C, L)
+        h = h.permute(2, 0, 1)  # (L, N, C)
+        h = self.transformer(h)  # (L, N, C)
+        h = self.lstm(h)  # (L, N, C)
+        h = h.permute(1, 0, 2)  # (N, L, C)
+        h = self.mlp(h)  # (N)
+        
+        return h
