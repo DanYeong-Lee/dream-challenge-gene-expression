@@ -1,7 +1,8 @@
 
+models = ["danq"]
 folds = [0, 1, 2, 3, 4]
 
-ALL = expand("logs/experiments/runs/BaseTransformer/fold{fold}/checkpoints/best.ckpt", fold=folds)
+ALL = expand("logs/experiments/runs/{model}/fold{fold}/checkpoints/best.ckpt", model=models, fold=folds)
 
 rule all:
     input:
@@ -13,5 +14,7 @@ rule train:
     shell:
         "python train.py "
         "trainer.gpus=[1] "
+        "trainer.max_epochs=50 "
+        "model={wildcards.name}.yaml "
         "name={wildcards.name} "
         "fold={wildcards.fold} "
