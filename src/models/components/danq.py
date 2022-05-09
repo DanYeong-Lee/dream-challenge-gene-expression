@@ -8,9 +8,9 @@ class DanQ(nn.Module):
         self,
         conv_out_dim: int = 320,
         conv_kernel_size: int = 26,
-        pool_size: int = 13,
+        pool_size: int = 3,
         lstm_hidden_dim: int = 320,
-        fc_hidden_dim: int = 925,
+        fc_hidden_dim: int = 64,
         dropout1: float = 0.2,
         dropout2: float = 0.5
     ):
