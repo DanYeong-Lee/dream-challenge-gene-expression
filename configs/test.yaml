@@ -3,12 +3,12 @@
 # specify here default evaluation configuration
 defaults:
   - _self_
-  - datamodule: mnist.yaml # choose the datamodule for evaluation
-  - model: mnist.yaml
-  - callbacks: null
+  - datamodule: default.yaml
+  - model: base_transformer.yaml
+  - callbacks: default.yaml
   - logger: null
   - trainer: default.yaml
-  - log_dir: evaluation.yaml
+  - log_dir: default.yaml
 
   - experiment: null
 
@@ -18,13 +18,11 @@ defaults:
 
 original_work_dir: ${hydra:runtime.cwd}
 
-data_dir: ${original_work_dir}/data/
-
 print_config: True
 
 ignore_warnings: True
 
-seed: null
+seed: 42
 
 name: "default"
 

@@ -1,0 +1,13 @@
+_target_: src.models.model_conjoined.ConjoinedNet
+lr: 1e-3
+weight_decay: 1e-5
+net:
+  _target_: src.models.components.danq_ss.DanQ
+  conv_out_dim: 320
+  conv_kernel_size: 26
+  pool_size: 3
+  lstm_hidden_dim: 320
+  fc_hidden_dim: 64
+  dropout1: 0.2
+  dropout2: 0.5
+  
