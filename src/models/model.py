@@ -50,13 +50,10 @@ class MainNet(LightningModule):
     
     def training_step(self, batch, batch_idx):
         loss, preds, targets = self.step(batch)
-        
         spearman = self.train_spearman(preds, targets)
         pearson = self.train_pearson(preds, targets)
-        
-        self.log("train/loss", loss, on_step=False, on_epoch=True, prog_bar=False)
-        self.log("train/spearman", spearman, on_step=False, on_epoch=True, prog_bar=True)
-        self.log("train/pearson", pearson, on_step=False, on_epoch=True, prog_bar=True)
+        metrics = {"train/loss": loss, "train/spearman": spearman, "train/pearson": pearson}
+        self.log_dict(metrics, on_step=False, on_epoch=True, prog_bar=True)
         
         return loss
     
@@ -66,13 +63,10 @@ class MainNet(LightningModule):
     
     def validation_step(self, batch, batch_idx):
         loss, preds, targets = self.step(batch)
-        
         spearman = self.val_spearman(preds, targets)
         pearson = self.val_pearson(preds, targets)
-        
-        self.log("val/loss", loss, on_step=False, on_epoch=True, prog_bar=False)
-        self.log("val/spearman", spearman, on_step=False, on_epoch=True, prog_bar=True)
-        self.log("val/pearson", pearson, on_step=False, on_epoch=True, prog_bar=True)
+        metrics = {"val/loss": loss, "val/spearman": spearman, "val/pearson": pearson}
+        self.log_dict(metrics, on_step=False, on_epoch=True, prog_bar=True)
         
     def validation_epoch_end(self, outputs):
         # get val metric from current epoch
@@ -91,13 +85,10 @@ class MainNet(LightningModule):
         
     def test_step(self, batch, batch_idx):
         loss, preds, targets = self.step(batch)
-        
         spearman = self.test_spearman(preds, targets)
         pearson = self.test_pearson(preds, targets)
-        
-        self.log("test/loss", loss, on_step=False, on_epoch=True)
-        self.log("test/spearman", spearman, on_step=False, on_epoch=True)
-        self.log("test/pearson", pearson, on_step=False, on_epoch=True)
+        metrics = {"test/loss": loss, "test/spearman": spearman, "test/pearson": pearson}
+        self.log_dict(metrics, on_step=False, on_epoch=True, prog_bar=True)
     
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), 

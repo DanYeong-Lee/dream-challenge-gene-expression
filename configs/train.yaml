@@ -10,15 +10,8 @@ defaults:
   - trainer: default.yaml
   - log_dir: default.yaml
 
-  # experiment configs allow for version control of specific configurations
-  # e.g. best hyperparameters for each combination of model and datamodule
-  - experiment: null
-
   # debugging config (enable through command line, e.g. `python train.py debug=default)
   - debug: null
-
-  # config for hyperparameter optimization
-  - hparams_search: null
 
   # optional local config for machine/user specific settings
   # it's optional since it doesn't need to exist and is excluded from version control

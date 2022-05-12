@@ -1,6 +1,6 @@
 
-models = ["danq_conjoined"]
-folds = [1, 2, 3, 4]
+models = ["danq_conjoined_reg"]
+folds = [0]
 #folds = [0, 1, 2, 3, 4]
 
 ALL = expand("logs/experiments/runs/{model}_base/fold{fold}/checkpoints/best.ckpt", model=models, fold=folds)
