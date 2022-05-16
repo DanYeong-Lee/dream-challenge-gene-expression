@@ -2,7 +2,7 @@ _target_: src.models.model.ConjoinedNet
 lr: 1e-3
 weight_decay: 0
 net:
-  _target_: src.models.components.danq_ss.DanQ
+  _target_: src.models.components.danq.DanQ_SS
   conv_out_dim: 320
   conv_kernel_size: 26
   pool_size: 3

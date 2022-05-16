@@ -2,7 +2,7 @@ _target_: src.models.model.MainNet
 lr: 1e-3
 weight_decay: 0
 net:
-  _target_: src.models.components.danq_ds.DanQ_DS
+  _target_: src.models.components.danq.DanQ_DS
   conv_out_dim: 160
   conv_kernel_size: 26
   pool_size: 3
