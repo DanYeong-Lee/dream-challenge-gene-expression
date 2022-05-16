@@ -1,6 +1,6 @@
 _target_: src.models.model.MainNet
 lr: 1e-3
-weight_decay: 1e-5
+weight_decay: 0
 net:
   _target_: src.models.components.base_transformer.BaseTransformer
   strand_out_dim: 256

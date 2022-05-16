@@ -1,5 +1,5 @@
 
-models = ["danq_irrep_conjoined"]
+models = ["danq_conjoined"]
 folds = [0]
 #folds = [0, 1, 2, 3, 4]
 

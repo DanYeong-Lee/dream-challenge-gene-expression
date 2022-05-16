@@ -4,7 +4,7 @@
 defaults:
   - _self_
   - datamodule: default.yaml
-  - model: base_transformer.yaml
+  - model: danq_conjoined.yaml
   - callbacks: default.yaml
   - logger: wandb.yaml
   - trainer: default.yaml
