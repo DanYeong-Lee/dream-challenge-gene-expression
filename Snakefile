@@ -1,5 +1,5 @@
 
-models = ["danq_conjoined_reg"]
+models = ["danq_irrep_conjoined"]
 folds = [0]
 #folds = [0, 1, 2, 3, 4]
 
@@ -14,7 +14,7 @@ rule train:
         "logs/experiments/runs/{name}_{version}/fold{fold}/checkpoints/best.ckpt"
     shell:
         "python train.py "
-        "trainer.gpus=[0] "
+        "trainer.gpus=[1] "
         "trainer.max_epochs=50 "
         "+trainer.profiler='pytorch' "
         
