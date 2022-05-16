@@ -100,6 +100,7 @@ class MainNet(LightningModule):
     
 class ConjoinedNet(LightningModule):
     """Post-hoc conjoined setting"""
+    """Should use with network that receives single strand as input"""
     def __init__(self, 
                  net: nn.Module,
                  lr: float = 1e-3,
