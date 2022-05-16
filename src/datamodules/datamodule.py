@@ -5,7 +5,7 @@ from sklearn.model_selection import KFold
 import torch
 from torch.utils.data import Dataset, DataLoader
 from pytorch_lightning import LightningDataModule
-from src.datamodules.components.dataset import MyDataset, get_len
+from src.datamodules.components.dataset import OneHotDataset, IndexDataset, get_len
 
 
     
@@ -16,7 +16,8 @@ class MyDataModule(LightningDataModule):
         test_dir: str ="/data/project/ddp/data/dream/test_sequences.txt",  
         batch_size: int = 1024, 
         num_workers: int = 4,
-        fold: int = 0
+        fold: int = 0,
+        one_hot: bool = True
     ):
         super().__init__()
         self.save_hyperparameters(logger=False)
@@ -24,6 +25,11 @@ class MyDataModule(LightningDataModule):
         self.train_data: Optional[Dataset] = None
         self.val_data: Optional[Dataset] = None
         self.test_data: Optional[Dataset] = None
+            
+        if one_hot:
+            self.dataset = OneHotDataset
+        else:
+            self.dataset = IndexDataset
 
     def setup(self, stage=None):
         if stage == "fit" or stage == None:
@@ -33,12 +39,12 @@ class MyDataModule(LightningDataModule):
                 if i == self.hparams.fold:
                     break
 
-            self.train_data = MyDataset(self.hparams.train_dir, train_idx)
-            self.val_data = MyDataset(self.hparams.train_dir, val_idx)
+            self.train_data = self.dataset(self.hparams.train_dir, train_idx)
+            self.val_data = self.dataset(self.hparams.train_dir, val_idx)
         
         if stage == "test" or stage == None:
             test_length = get_len(self.hparams.test_dir)
-            self.test_data = MyDataset(self.hparams.test_dir, range(test_length))
+            self.test_data = self.dataset(self.hparams.test_dir, range(test_length))
     
     def train_dataloader(self):
         return DataLoader(
