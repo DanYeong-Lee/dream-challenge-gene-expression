@@ -1,5 +1,5 @@
 from typing import Optional, Tuple
-
+import pandas as pd
 from sklearn.model_selection import KFold
 
 import torch
@@ -33,18 +33,21 @@ class MyDataModule(LightningDataModule):
 
     def setup(self, stage=None):
         if stage == "fit" or stage == None:
-            train_length = get_len(self.hparams.train_dir)
+            train_df = pd.read_csv(self.hparams.train_dir, sep="\t", names["seq", "target"])
+            train_length = len(train_df)
             kfold = KFold(n_splits=5, shuffle=True, random_state=123456789)
             for i, (train_idx, val_idx) in enumerate(kfold.split(range(train_length))):
                 if i == self.hparams.fold:
                     break
-
-            self.train_data = self.dataset(self.hparams.train_dir, train_idx)
-            self.val_data = self.dataset(self.hparams.train_dir, val_idx)
+            
+            train_df = pd.read_csv(self.hparams.train_dir, sep="\t", names["seq", "target"])
+            self.train_data = self.dataset(train_df, train_idx)
+            self.val_data = self.dataset(train_df, val_idx)
         
         if stage == "test" or stage == None:
-            test_length = get_len(self.hparams.test_dir)
-            self.test_data = self.dataset(self.hparams.test_dir, range(test_length))
+            test_df = pd.read_csv(self.hparams.test_dir, sep="\t", names["seq", "target"])
+            test_length = len(test_df)
+            self.test_data = self.dataset(test_df, range(test_length))
     
     def train_dataloader(self):
         return DataLoader(

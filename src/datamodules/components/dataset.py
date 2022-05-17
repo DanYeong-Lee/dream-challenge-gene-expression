@@ -13,16 +13,14 @@ def get_len(file):
     
     return n
 
-
 class OneHotDataset(Dataset):
     def __init__(
         self, 
-        file_path, 
+        df,
         fold_idx
     ):
-        self.file_path = file_path
+        self.records = df.to_records()
         self.fold_idx = fold_idx
-        self.length = len(fold_idx)
         self.base2vec = {
             "A": [1., 0., 0., 0.],
             "T": [0., 1., 0., 0.],
@@ -44,12 +42,11 @@ class OneHotDataset(Dataset):
         return rev_tensor
 
     def __len__(self):
-        return self.length
+        return len(self.fold_idx)
     
     def __getitem__(self, idx):
         line_idx = self.fold_idx[idx]
-        line = linecache.getline(self.file_path, line_idx + 1).strip()
-        seq, target = line.split("\t")
+        _, seq, target = self.records[line_idx]
         X = self.seq2mat(seq)
         X_rev = self.reverse_complement(X)
         y = torch.tensor(float(target), dtype=torch.float32)
@@ -60,12 +57,11 @@ class OneHotDataset(Dataset):
 class IndexDataset(Dataset):
     def __init__(
         self, 
-        file_path, 
+        df,
         fold_idx
     ):
-        self.file_path = file_path
+        self.records = df.to_records()
         self.fold_idx = fold_idx
-        self.length = len(fold_idx)
         self.base2idx = {"A": 0, "T": 1, "C": 2, "G": 3, "N": 4}
     
     def seq2vec(self, seq, max_len=110):
@@ -75,10 +71,11 @@ class IndexDataset(Dataset):
         return mat
 
     def __len__(self):
-        return self.length
+        return len(self.fold_idx)
     
     def __getitem__(self, idx):
         line_idx = self.fold_idx[idx]
+        _, seq, target = self.records[line_idx]
         line = linecache.getline(self.file_path, line_idx + 1).strip()
         seq, target = line.split("\t")
         X = self.seq2vec(seq)
