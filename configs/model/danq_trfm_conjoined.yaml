@@ -4,7 +4,7 @@ weight_decay: 0
 net:
   _target_: src.models.components.danq.DanQ_Transformer
   conv_out_dim: 320
-  conv_kernel_size: 26
+  conv_kernel_size: 15
   pool_size: 3
   trfm_nhead: 8
   trfm_fc_dim: 320

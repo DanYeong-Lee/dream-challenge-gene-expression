@@ -4,7 +4,7 @@ weight_decay: 0
 net:
   _target_: src.models.components.danq.DanQ_DS
   conv_out_dim: 160
-  conv_kernel_size: 26
+  conv_kernel_size: 15
   pool_size: 3
   lstm_hidden_dim: 160
   fc_hidden_dim: 64
