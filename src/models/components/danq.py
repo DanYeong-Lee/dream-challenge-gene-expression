@@ -4,6 +4,30 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+class ConvBlock_bn(nn.Module):
+    def __init__(
+        self,
+        input_dim: int = 4,
+        out_dim: int = 320,
+        kernel_size: int = 26,
+        pool_size: int = 3,
+        dropout: float = 0.2
+    ):
+        super().__init__()
+        self.main = nn.Sequential(
+            nn.Conv1d(in_channels=input_dim, out_channels=out_dim, kernel_size=kernel_size),
+            nn.BatchNorm1d(out_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.MaxPool1d(pool_size)
+        )
+    
+    def forward(self, x):
+        # x: (N, C, L)
+        
+        return self.main(x)
+
+    
 class ConvBlock(nn.Module):
     def __init__(
         self,
@@ -240,7 +264,7 @@ class DanQ_EmbedBase(nn.Module):
         self,
         embed_dim: int = 32,
         conv_out_dim: int = 320,
-        conv_kernel_size: int = 26,
+        conv_kernel_size: int = 15,
         pool_size: int = 3,
         lstm_hidden_dim: int = 320,
         fc_hidden_dim: int = 64,
@@ -253,16 +277,20 @@ class DanQ_EmbedBase(nn.Module):
         fc_input_dim = lstm_hidden_dim * 2 * pool_out_len
         
         self.embed = nn.Embedding(num_embeddings=5, embedding_dim=embed_dim)
-        self.conv_block = ConvBlock(embed_dim, conv_out_dim, conv_kernel_size, pool_size, dropout1)
+        self.conv_block = ConvBlock_bn(embed_dim, conv_out_dim, conv_kernel_size, pool_size, dropout1)
 
         self.lstm = nn.LSTM(input_size=conv_out_dim, hidden_size=lstm_hidden_dim, bidirectional=True)
         self.fc = nn.Sequential(
             nn.Flatten(),
             nn.Dropout(dropout2),
             nn.Linear(fc_input_dim, fc_hidden_dim),
+            nn.BatchNorm1d(fc_hidden_dim)
             nn.ReLU(),
+            nn.Dropout(dropout2),
             nn.Linear(fc_hidden_dim, fc_hidden_dim),
+            nn.BatchNorm1d(fc_hidden_dim)
             nn.ReLU(),
+            nn.Dropout(dropout2)
             nn.Linear(fc_hidden_dim, 1)
         )
     def forward(self, x):
