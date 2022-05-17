@@ -7,14 +7,15 @@ import torch.nn.functional as F
 class ConvBlock(nn.Module):
     def __init__(
         self,
-        conv_out_dim: int = 320,
-        conv_kernel_size: int = 26,
+        input_dim: int = 4,
+        out_dim: int = 320,
+        kernel_size: int = 26,
         pool_size: int = 3,
         dropout: float = 0.2
     ):
         super().__init__()
         self.main = nn.Sequential(
-            nn.Conv1d(in_channels=4, out_channels=conv_out_dim, kernel_size=conv_kernel_size),
+            nn.Conv1d(in_channels=input_dim, out_channels=out_dim, kernel_size=kernel_size),
             nn.ReLU(),
             nn.MaxPool1d(pool_size),
             nn.Dropout(dropout)
@@ -42,7 +43,7 @@ class DanQ(nn.Module):
         pool_out_len = int(1 + ((conv_out_len - pool_size) / pool_size))
         fc_input_dim = lstm_hidden_dim * 2 * pool_out_len
         
-        self.conv_block = ConvBlock(conv_out_dim, conv_kernel_size, pool_size, dropout1)
+        self.conv_block = ConvBlock(4, conv_out_dim, conv_kernel_size, pool_size, dropout1)
 
         self.lstm = nn.LSTM(input_size=conv_out_dim, hidden_size=lstm_hidden_dim, bidirectional=True)
         self.fc = nn.Sequential(
@@ -115,8 +116,8 @@ class DanQ_DS(nn.Module):
         pool_out_len = int(1 + ((conv_out_len - pool_size) / pool_size))
         fc_input_dim = lstm_hidden_dim * 2 * 2 * pool_out_len
         
-        self.fwd_conv = ConvBlock(conv_out_dim, conv_kernel_size, pool_size, dropout1)
-        self.rev_conv = ConvBlock(conv_out_dim, conv_kernel_size, pool_size, dropout1)
+        self.fwd_conv = ConvBlock(4, conv_out_dim, conv_kernel_size, pool_size, dropout1)
+        self.rev_conv = ConvBlock(4, conv_out_dim, conv_kernel_size, pool_size, dropout1)
         
         self.fwd_lstm = nn.LSTM(input_size=conv_out_dim, hidden_size=lstm_hidden_dim, bidirectional=True)
         self.rev_lstm = nn.LSTM(input_size=conv_out_dim, hidden_size=lstm_hidden_dim, bidirectional=True)
@@ -165,12 +166,7 @@ class DanQ_Transformer(nn.Module):
         pool_out_len = int(1 + ((conv_out_len - pool_size) / pool_size))
         fc_input_dim = conv_out_dim * pool_out_len
         
-        self.conv_block = nn.Sequential(
-            nn.Conv1d(in_channels=4, out_channels=conv_out_dim, kernel_size=conv_kernel_size),
-            nn.BatchNorm1d(conv_out_dim),
-            nn.ReLU(),
-            nn.MaxPool1d(pool_size)
-        )
+        self.conv_block = ConvBlock(4, conv_out_dim, conv_kernel_size, pool_size, dropout)
         
         self.pos_enc = PositionalEncoding1D(conv_out_dim)
         trfm_encoder = nn.TransformerEncoderLayer(
@@ -237,3 +233,46 @@ class PositionalEncoding1D(nn.Module):
 
         self.cached_penc = emb[None, :, :orig_ch].repeat(batch_size, 1, 1)
         return self.cached_penc
+    
+    
+class DanQ_EmbedBase(nn.Module):
+    def __init__(
+        self,
+        embed_dim: int = 32,
+        conv_out_dim: int = 320,
+        conv_kernel_size: int = 26,
+        pool_size: int = 3,
+        lstm_hidden_dim: int = 320,
+        fc_hidden_dim: int = 64,
+        dropout1: float = 0.2,
+        dropout2: float = 0.5
+    ):
+        super().__init__()
+        conv_out_len = 110 - conv_kernel_size + 1
+        pool_out_len = int(1 + ((conv_out_len - pool_size) / pool_size))
+        fc_input_dim = lstm_hidden_dim * 2 * pool_out_len
+        
+        self.embed = nn.Embedding(num_embeddings=5, embedding_dim=embed_dim)
+        self.conv_block = ConvBlock(embed_dim, conv_out_dim, conv_kernel_size, pool_size, dropout1)
+
+        self.lstm = nn.LSTM(input_size=conv_out_dim, hidden_size=lstm_hidden_dim, bidirectional=True)
+        self.fc = nn.Sequential(
+            nn.Flatten(),
+            nn.Dropout(dropout2),
+            nn.Linear(fc_input_dim, fc_hidden_dim),
+            nn.ReLU(),
+            nn.Linear(fc_hidden_dim, fc_hidden_dim),
+            nn.ReLU(),
+            nn.Linear(fc_hidden_dim, 1)
+        )
+    def forward(self, x):
+        # x: (N, L, C)
+        
+        x = self.embed(x)  # (N, L, C)
+        x = x.transpose(1, 2)  # (N, C, L)
+        x = self.conv_block(x)
+        x = x.permute(2, 0, 1)  # (L, N, C)
+        x, (h, c) = self.lstm(x)
+        x = x.transpose(0, 1)  # (N, L, C)
+        x = self.fc(x).squeeze(-1)
+        return x
