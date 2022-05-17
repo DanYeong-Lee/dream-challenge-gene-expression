@@ -284,13 +284,13 @@ class DanQ_EmbedBase(nn.Module):
             nn.Flatten(),
             nn.Dropout(dropout2),
             nn.Linear(fc_input_dim, fc_hidden_dim),
-            nn.BatchNorm1d(fc_hidden_dim)
+            nn.BatchNorm1d(fc_hidden_dim),
             nn.ReLU(),
             nn.Dropout(dropout2),
             nn.Linear(fc_hidden_dim, fc_hidden_dim),
-            nn.BatchNorm1d(fc_hidden_dim)
+            nn.BatchNorm1d(fc_hidden_dim),
             nn.ReLU(),
-            nn.Dropout(dropout2)
+            nn.Dropout(dropout2),
             nn.Linear(fc_hidden_dim, 1)
         )
     def forward(self, x):
