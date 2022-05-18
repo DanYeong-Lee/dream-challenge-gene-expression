@@ -41,7 +41,7 @@ class MyDataModule(LightningDataModule):
             train_df = df.iloc[train_idx]
             val_df = df.iloc[val_idx]
             self.train_data = self.dataset(train_df)
-            self.val_data = self.dataset(train_df)
+            self.val_data = self.dataset(val_df)
         
         if stage == "test" or stage == None:
             test_df = pd.read_csv(self.hparams.test_dir, sep="\t", names=["seq", "target"])
