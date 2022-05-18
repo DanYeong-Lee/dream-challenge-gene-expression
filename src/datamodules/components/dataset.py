@@ -76,7 +76,6 @@ class IndexDataset(Dataset):
     def __getitem__(self, idx):
         line_idx = self.fold_idx[idx]
         _, seq, target = self.records[line_idx]
-        line = linecache.getline(self.file_path, line_idx + 1).strip()
         seq, target = line.split("\t")
         X = self.seq2vec(seq)
         X_rev = self.seq2vec(Seq(seq).reverse_complement())
