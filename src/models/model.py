@@ -3,7 +3,7 @@ from typing import Any, List
 import torch
 import torch.nn as nn
 from pytorch_lightning import LightningModule
-from torchmetrics import MaxMetric, PearsonCorrCoef, SpearmanCorrCoef
+from torchmetrics import MaxMetric, PearsonCorrCoef, SpearmanCorrCoef, R2Score
 
 
 class MainNet(LightningModule):
@@ -29,10 +29,13 @@ class MainNet(LightningModule):
         self.val_spearman = SpearmanCorrCoef()
         self.test_spearman = SpearmanCorrCoef()
         
+        self.train_r2 = R2Score()
+        self.val_r2 = R2Score()
+        
         # for logging best so far validation accuracy
         self.val_spearman_best = MaxMetric()
         self.val_pearson_best = MaxMetric()
-        
+        self.val_r2_best = MaxMetric()
         
     def forward(self, fwd_x, rev_x):        
         return self.net(fwd_x, rev_x)
@@ -42,6 +45,7 @@ class MainNet(LightningModule):
         # so we need to make sure val_acc_best doesn't store accuracy from these checks
         self.val_spearman_best.reset()
         self.val_pearson_best.reset()
+        self.val_r2_best.reset()
     
     def step(self, batch):
         fwd_x, rev_x, y = batch
@@ -54,7 +58,8 @@ class MainNet(LightningModule):
         loss, preds, targets = self.step(batch)
         spearman = self.train_spearman(preds, targets)
         pearson = self.train_pearson(preds, targets)
-        metrics = {"train/loss": loss, "train/spearman": spearman, "train/pearson": pearson}
+        r2 = self.train_r2(preds, targets)
+        metrics = {"train/loss": loss, "train/spearman": spearman, "train/pearson": pearson, "train/r2": r2}
         self.log_dict(metrics, on_step=False, on_epoch=True, prog_bar=True)
         
         return loss
@@ -62,28 +67,34 @@ class MainNet(LightningModule):
     def training_step_end(self, outputs):
         self.train_spearman.reset()
         self.train_pearson.reset()
+        self.train_r2.reset()
     
     def validation_step(self, batch, batch_idx):
         loss, preds, targets = self.step(batch)
         spearman = self.val_spearman(preds, targets)
         pearson = self.val_pearson(preds, targets)
-        metrics = {"val/loss": loss, "val/spearman": spearman, "val/pearson": pearson}
+        r2 = self.val_r2(preds, targets)
+        metrics = {"val/loss": loss, "val/spearman": spearman, "val/pearson": pearson, "val/r2": r2}
         self.log_dict(metrics, on_step=False, on_epoch=True, prog_bar=True)
         
     def validation_epoch_end(self, outputs):
         # get val metric from current epoch
         spearman = self.val_spearman.compute()
         pearson = self.val_pearson.compute()
+        r2 = self.val_r2.compute()
         
         # log best metric
         self.val_spearman_best.update(spearman)
         self.val_pearson_best.update(pearson)
+        self.val_r2_best.update(r2)
         self.log("val/spearman_best", self.val_spearman_best.compute(), on_epoch=True, prog_bar=True)
         self.log("val/pearson_best", self.val_pearson_best.compute(), on_epoch=True, prog_bar=True)
+        self.log("val/r2_best", self.val_r2_best.compute(), on_epoch=True, prog_bar=True)
         
         # reset val metrics
         self.val_spearman.reset()
         self.val_pearson.reset()
+        self.val_r2.reset()
         
     def test_step(self, batch, batch_idx):
         loss, preds, targets = self.step(batch)
