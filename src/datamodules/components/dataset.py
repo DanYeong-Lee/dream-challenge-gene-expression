@@ -5,14 +5,6 @@ from torch.utils.data import Dataset
 from Bio.Seq import Seq
 
 
-def get_len(file):
-    n = 0
-    with open(file) as f:
-        for line in f:
-            n += 1
-    
-    return n
-
 class OneHotDataset(Dataset):
     def __init__(
         self, 
@@ -24,13 +16,15 @@ class OneHotDataset(Dataset):
             "T": [0., 1., 0., 0.],
             "C": [0., 0., 1., 0.],
             "G": [0., 0., 0., 1.],
-            "N": [0.25, 0.25, 0.25, 0.25]
+            "N": [0., 0., 0., 0.]
         }
     
-    def seq2mat(self, seq, max_len=110):
-        seq = seq[:max_len]
+    def seq2mat(self,seq, max_len=110):
+        if len(seq) > max_len:
+            seq = seq[len(seq) - max_len :]
+        else:
+            seq = "N" * (max_len - len(seq)) + seq
         mat = torch.tensor(list(map(lambda x: self.base2vec[x], seq)), dtype=torch.float32)
-        mat = torch.cat([mat, torch.zeros((max_len - len(seq), 4), dtype=torch.float32)])
         return mat
     
     def reverse_complement(self, fwd_tensor):

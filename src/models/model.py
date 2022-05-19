@@ -12,7 +12,8 @@ class MainNet(LightningModule):
         self,
         net: nn.Module,
         lr: float = 1e-3,
-        weight_decay: float = 1e-5
+        weight_decay: float = 1e-5,
+        
     ):
         super().__init__()
         self.save_hyperparameters(ignore=["net"])

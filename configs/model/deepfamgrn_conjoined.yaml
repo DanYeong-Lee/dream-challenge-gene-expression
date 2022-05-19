@@ -6,7 +6,7 @@ net:
   conv_out_dim: 320
   conv_kernel_size: [10, 15]
   pool_size: 3
-  lstm_hidden_dim: 320
+  lstm_hidden_dim: 160
   num_heads: 4
   fc_hidden_dim: 64
   dropout1: 0.2
