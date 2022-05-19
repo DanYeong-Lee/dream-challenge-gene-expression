@@ -1,5 +1,5 @@
 
-models = ["deepgrn_conjoined"]
+models = ["deepfamq_conjoined"]
 
 folds = [1, 2, 3, 4]
 #folds = [0, 1, 2, 3, 4]
