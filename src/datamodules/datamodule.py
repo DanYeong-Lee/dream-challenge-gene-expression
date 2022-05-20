@@ -56,13 +56,17 @@ class MyDataModule(LightningDataModule):
         return DataLoader(
             dataset=self.train_data, 
             batch_size=self.hparams.batch_size,
-            num_workers=self.hparams.num_workers)
+            num_workers=self.hparams.num_workers,
+            shuffle=True,
+            drop_last=True            
+        )
     
     def val_dataloader(self):
         return DataLoader(
             dataset=self.val_data, 
             batch_size=self.hparams.batch_size,
-            num_workers=self.hparams.num_workers)
+            num_workers=self.hparams.num_workers 
+        )
     
     def test_dataloader(self):
         return DataLoader(
