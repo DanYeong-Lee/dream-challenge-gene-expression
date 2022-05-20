@@ -17,7 +17,8 @@ class MyDataModule(LightningDataModule):
         batch_size: int = 1024, 
         num_workers: int = 4,
         fold: int = 0,
-        one_hot: bool = True
+        one_hot: bool = True,
+        normalize: bool = True
     ):
         super().__init__()
         self.save_hyperparameters(logger=False)
@@ -30,10 +31,14 @@ class MyDataModule(LightningDataModule):
             self.dataset = OneHotDataset
         else:
             self.dataset = IndexDataset
+            
+        self.normalize = True
 
     def setup(self, stage=None):
         if stage == "fit" or stage == None:
             df = pd.read_csv(self.hparams.train_dir, sep="\t", names=["seq", "target"])
+            if self.normalize:
+                df["target"] = (df.target - 11) / 2
             kfold = KFold(n_splits=5, shuffle=True, random_state=123456789)
             for i, (train_idx, val_idx) in enumerate(kfold.split(df)):
                 if i == self.hparams.fold:

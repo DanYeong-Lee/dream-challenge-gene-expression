@@ -6,3 +6,4 @@ batch_size: 1024
 num_workers: 4
 fold: ${fold}
 one_hot: True
+normalize: True
