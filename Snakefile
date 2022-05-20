@@ -1,7 +1,7 @@
 
-models = ["deepfamgrn_conjoined"]
+models = ["deepfamgrn_conjoined_cosann"]
 
-folds = [0, 1, 2, 3, 4]
+folds = [0]
 #folds = [0, 1, 2, 3, 4]
 
 ALL = expand("logs/experiments/runs/{model}/fold{fold}/checkpoints/best.ckpt", model=models, fold=folds)

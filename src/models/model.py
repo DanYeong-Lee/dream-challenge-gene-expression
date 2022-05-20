@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 from pytorch_lightning import LightningModule
 from torchmetrics import MaxMetric, PearsonCorrCoef, SpearmanCorrCoef, R2Score
+from cosine_annealing_warmup import CosineAnnealingWarmupRestarts
 
 
 class MainNet(LightningModule):
@@ -133,3 +134,52 @@ class ConjoinedNet(MainNet):
         pred = (fwd_pred + rev_pred) / 2
         
         return loss, pred, y
+
+
+class ConjoinedNetCA(ConjoinedNet):
+    """Post-hoc conjoined setting"""
+    """+ CosineAnnealingWarmupRestarts"""
+    def __init__(
+        self,
+        net: nn.Module,
+        lr: float = 1e-3,
+        weight_decay: float = 0,
+        first_cycle_steps: int = 1000,
+        cycle_mult: float = 1.0,
+        min_lr: float = 0.0001,
+        warmup_steps: int = 50,
+        gamma: float = 1.0
+    ):
+        super().__init__(net, lr, weight_decay)
+        self.first_cycle_steps = first_cycle_steps
+        self.cycle_mult = cycle_mult
+        self.min_lr = min_lr
+        self.warmup_steps = warmup_steps
+        self.gamma = gamma
+        
+    
+    def training_step_end(self, outputs):
+        self.train_spearman.reset()
+        self.train_pearson.reset()
+        self.train_r2.reset()
+        
+        sch = self.lr_schedulers()
+        sch.step()
+    
+    def configure_optimizers(self):
+        optimizer = torch.optim.Adam(
+            self.parameters(), 
+            lr=self.hparams.lr, 
+            weight_decay=self.hparams.weight_decay
+        )
+        scheduler = CosineAnnealingWarmupRestarts(
+            optimizer,
+            first_cycle_steps=self.first_cycle_steps,
+            cycle_mult=self.cycle_mult,
+            max_lr=self.hparams.lr,
+            min_lr=self.min_lr,
+            warmup_steps=self.warmup_steps,
+            gamma=self.gamma
+        )
+        
+        return [optimizer], [scheduler]
