@@ -1,10 +1,10 @@
 
-models = ["deepfamgrn_conjoined_cosann"]
+models = ["danq_conjoined"]
 
 folds = [0]
 #folds = [0, 1, 2, 3, 4]
 
-ALL = expand("logs/experiments/runs/{model}/fold{fold}/checkpoints/best.ckpt", model=models, fold=folds)
+ALL = expand("logs/experiments/runs/{model}_fixed/fold{fold}/checkpoints/best.ckpt", model=models, fold=folds)
 
 rule all:
     input:
@@ -12,10 +12,10 @@ rule all:
         
 rule train:
     output:
-        "logs/experiments/runs/{name}/fold{fold}/checkpoints/best.ckpt"
+        "logs/experiments/runs/{name}_{version}/fold{fold}/checkpoints/best.ckpt"
     shell:
         "python train.py "
-        "trainer.gpus=[1] "
+        "trainer.gpus=[0] "
         "trainer.max_epochs=30 "
         "+trainer.profiler='pytorch' "
         
@@ -23,5 +23,5 @@ rule train:
         "model.lr=1e-3 "
         "model.weight_decay=0 "
         
-        "name={wildcards.name} "  # ModelCheckpoint output folder name
+        "name={wildcards.name}_{wildcards.version} "  # ModelCheckpoint output folder name
         "fold={wildcards.fold} "

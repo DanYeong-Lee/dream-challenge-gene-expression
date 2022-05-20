@@ -1,11 +1,11 @@
 _target_: src.models.model.ConjoinedNetCA
 lr: 0.001
 weight_decay: 0
-first_cycle_steps: 1000
-cycle_mult: 1.0
+first_cycle_steps: 500
+cycle_mult: 1.5
 min_lr: 0.0001
-warmup_steps: 200
-gamma: 1.0
+warmup_steps: 100
+gamma: 0.9
 net:
   _target_: src.models.components.deepgrn.DeepFamGRN
   conv_out_dim: 320
