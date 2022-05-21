@@ -1,4 +1,4 @@
-_target_: src.models.model.ConjoinedNet_CA
+_target_: src.models.model.ConjoinedNet_AW_CA
 lr: 0.001
 weight_decay: 0
 first_cycle_steps: 2

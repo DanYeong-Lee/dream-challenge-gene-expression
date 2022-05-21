@@ -136,7 +136,22 @@ class ConjoinedNet(MainNet):
         return loss, pred, y
 
 
-class ConjoinedNetCA(ConjoinedNet):
+class ConjoinedNet_AW(ConjoinedNet):
+    def __init__(
+        self,
+        net: nn.Module,
+        lr: float = 1e-3,
+        weight_decay: float = 1e-5
+    ):
+        super().__init__(net, lr, weight_decay)
+        
+    def configure_optimizers(self):
+        return torch.optim.AdamW(self.parameters(), 
+                                lr=self.hparams.lr, 
+                                weight_decay=self.hparams.weight_decay)
+    
+    
+class ConjoinedNet_CA(ConjoinedNet):
     """Post-hoc conjoined setting"""
     """+ CosineAnnealingWarmupRestarts"""
     def __init__(
@@ -164,6 +179,51 @@ class ConjoinedNetCA(ConjoinedNet):
     
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(
+            self.parameters(), 
+            lr=self.hparams.lr, 
+            weight_decay=self.hparams.weight_decay
+        )
+        scheduler = CosineAnnealingWarmupRestarts(
+            optimizer,
+            first_cycle_steps=self.first_cycle_steps,
+            cycle_mult=self.cycle_mult,
+            max_lr=self.hparams.lr,
+            min_lr=self.min_lr,
+            warmup_steps=self.warmup_steps,
+            gamma=self.gamma
+        )
+        
+        return [optimizer], [scheduler]
+
+    
+class ConjoinedNet_AW_CA(ConjoinedNet):
+    """Post-hoc conjoined setting"""
+    """+ CosineAnnealingWarmupRestarts"""
+    def __init__(
+        self,
+        net: nn.Module,
+        lr: float = 1e-3,
+        weight_decay: float = 0,
+        first_cycle_steps: int = 1000,
+        cycle_mult: float = 1.0,
+        min_lr: float = 0.0001,
+        warmup_steps: int = 50,
+        gamma: float = 1.0
+    ):
+        super().__init__(net, lr, weight_decay)
+        self.first_cycle_steps = first_cycle_steps
+        self.cycle_mult = cycle_mult
+        self.min_lr = min_lr
+        self.warmup_steps = warmup_steps
+        self.gamma = gamma
+        
+    
+    def training_epoch_end(self, outputs):
+        sch = self.lr_schedulers()
+        sch.step()
+    
+    def configure_optimizers(self):
+        optimizer = torch.optim.AdamW(
             self.parameters(), 
             lr=self.hparams.lr, 
             weight_decay=self.hparams.weight_decay
