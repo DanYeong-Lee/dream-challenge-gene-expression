@@ -36,14 +36,14 @@ class MHABlock(nn.Module):
         self.q = nn.Linear(input_dim, qkv_dim)
         self.k = nn.Linear(input_dim, qkv_dim)
         self.v = nn.Linear(input_dim, qkv_dim)
-        self.mha = nn.MultiheadAttention(embed_dim=qkv_dim, num_heads=num_heads, batch_first=True)
+        self.mha = nn.MultiheadAttention(embed_dim=qkv_dim, num_heads=num_heads)
         
     def forward(self, x):
-        # x: (N, L, C)
-        query = self.q(x)  # (N, L, C)
-        key = self.k(x)    # (N, L, C)
-        value = self.v(x)  # (N, L, C)
-        out, _ = self.mha(query, key, value, need_weights=False)  # (N, L, C)
+        # x: (L, N, C)
+        query = self.q(x)  # (L, N, C)
+        key = self.k(x)    # (L, N, C)
+        value = self.v(x)  # (L, N, C)
+        out, _ = self.mha(query, key, value, need_weights=False)  # (L, N, C)
         
         return out
 
@@ -88,12 +88,11 @@ class DeepGRN(nn.Module):
         fc_input_dim = lstm_hidden_dim * 2 * pool_out_len
         
         self.conv_block = ConvBlock(4, conv_out_dim, conv_kernel_size, pool_size, dropout1)
-        self.lstm = nn.LSTM(input_size=conv_out_dim, hidden_size=lstm_hidden_dim, bidirectional=True, batch_first=True)
+        self.lstm = nn.LSTM(input_size=conv_out_dim, hidden_size=lstm_hidden_dim, bidirectional=True)
         self.sa_layer = SABlock(pool_out_len, lstm_hidden_dim * 2)
         self.mha_layer = MHABlock(lstm_hidden_dim * 2, lstm_hidden_dim * 2, num_heads)
         
         self.sa_fc = nn.Sequential(
-            nn.Flatten(),
             nn.Dropout(dropout2),
             nn.Linear(lstm_hidden_dim * 2, fc_hidden_dim),
             nn.ReLU(),
@@ -116,13 +115,18 @@ class DeepGRN(nn.Module):
         # x: (N, L, C)
         x = x.transpose(1, 2)  # (N, C, L)
         x = self.conv_block(x)  # (N, C, L)
-        x = x.transpose(1, 2)  # (N, L, C)
-        x, (h, c) = self.lstm(x)  # (N, L, C)
+        x = x.permute(2, 0, 1)  # (L, N, C)
+        x, (h, c) = self.lstm(x)  # (L, N, C)
         
-        sa_in = x.transpose(1, 2)  # (N, C, L)
-        sa_out = self.sa_fc(self.sa_layer(sa_in))
-        mha_out = self.mha_fc(self.mha_layer(x))
-        out = (sa_out + mha_out) / 2
+        sa_x = x.permute(1, 2, 0)  # (N, C, L)
+        sa_x = self.sa_layer(x)  # (N, C)
+        sa_x = self.sa_fc(sa_x) 
+        
+        mha_x = self.mha_layer(sa_x)  # (L, N, C)
+        mha_x = mha_x.transpose(0, 1)  # (N, L, C)
+        mha_x = self.mha_fc(mha_x)  
+        
+        out = (sa_x + mha_x) / 2
         
         return out.squeeze()
     
@@ -145,12 +149,11 @@ class DeepFamGRN(nn.Module):
         conv_each_dim = int(conv_out_dim / len(conv_kernel_size))
         
         self.conv_blocks = nn.ModuleList([ConvBlock(4, conv_each_dim, k, pool_size, dropout1) for k in conv_kernel_size])
-        self.lstm = nn.LSTM(input_size=conv_out_dim, hidden_size=lstm_hidden_dim, bidirectional=True, batch_first=True)
+        self.lstm = nn.LSTM(input_size=conv_out_dim, hidden_size=lstm_hidden_dim, bidirectional=True)
         self.sa_layer = SABlock(pool_out_len, lstm_hidden_dim * 2)
         self.mha_layer = MHABlock(lstm_hidden_dim * 2, lstm_hidden_dim * 2, num_heads)
         
         self.sa_fc = nn.Sequential(
-            nn.Flatten(),
             nn.Dropout(dropout2),
             nn.Linear(lstm_hidden_dim * 2, fc_hidden_dim),
             nn.ReLU(),
@@ -176,12 +179,17 @@ class DeepFamGRN(nn.Module):
         for conv in self.conv_blocks:
             conv_outs.append(conv(x))
         x = torch.cat(conv_outs, dim=1)  # (N, C, L)
-        x = x.transpose(1, 2)  # (N, L, C)
-        x, (h, c) = self.lstm(x)  # (N, L, C)
+        x = x.permute(2, 0, 1)  # (L, N, C)
+        x, (h, c) = self.lstm(x)  # (L, N, C)
         
-        sa_in = x.transpose(1, 2)  # (N, C, L)
-        sa_out = self.sa_fc(self.sa_layer(sa_in))
-        mha_out = self.mha_fc(self.mha_layer(x))
-        out = (sa_out + mha_out) / 2
+        sa_x = x.permute(1, 2, 0)  # (N, C, L)
+        sa_x = self.sa_layer(sa_x)  # (N, C)
+        sa_x = self.sa_fc(sa_x) 
+        
+        mha_x = self.mha_layer(x)  # (L, N, C)
+        mha_x = mha_x.transpose(0, 1)  # (N, L, C)
+        mha_x = self.mha_fc(mha_x)  
+        
+        out = (sa_x + mha_x) / 2
         
         return out.squeeze()

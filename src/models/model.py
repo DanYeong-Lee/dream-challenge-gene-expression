@@ -158,11 +158,7 @@ class ConjoinedNetCA(ConjoinedNet):
         self.gamma = gamma
         
     
-    def training_step_end(self, outputs):
-        self.train_spearman.reset()
-        self.train_pearson.reset()
-        self.train_r2.reset()
-        
+    def training_epoch_end(self, outputs):
         sch = self.lr_schedulers()
         sch.step()
     
