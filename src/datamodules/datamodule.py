@@ -58,19 +58,27 @@ class MyDataModule(LightningDataModule):
             batch_size=self.hparams.batch_size,
             num_workers=self.hparams.num_workers,
             shuffle=True,
-            drop_last=True            
+            drop_last=True,
+            pin_memory=True
         )
     
     def val_dataloader(self):
         return DataLoader(
             dataset=self.val_data, 
             batch_size=self.hparams.batch_size,
-            num_workers=self.hparams.num_workers 
+            num_workers=self.hparams.num_workers,
+            shuffle=False,
+            drop_last=False,
+            pin_memory=True
         )
     
     def test_dataloader(self):
         return DataLoader(
             dataset=self.test_data, 
             batch_size=self.hparams.batch_size,
-            num_workers=self.hparams.num_workers)
+            num_workers=self.hparams.num_workers,
+            shuffle=False,
+            drop_last=False,
+            pin_memory=True
+        )
 
