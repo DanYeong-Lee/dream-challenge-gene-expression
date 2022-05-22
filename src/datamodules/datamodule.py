@@ -82,3 +82,37 @@ class MyDataModule(LightningDataModule):
             pin_memory=True
         )
 
+
+
+class NlessDataModule(MyDataModule):
+    def __init__(
+        self, 
+        train_dir: str = "/data/project/ddp/data/dream/train_sequences.txt", 
+        test_dir: str ="/data/project/ddp/data/dream/test_sequences.txt",  
+        batch_size: int = 1024, 
+        num_workers: int = 4,
+        fold: int = 0,
+        one_hot: bool = True,
+        normalize: bool = True
+    ):
+        super().__init__(train_dir, test_dir, batch_size, num_workers, fold, one_hot, normalize)
+        
+    
+    def setup(self, stage=None):
+        if stage == "fit" or stage == None:
+            df = pd.read_csv(self.hparams.train_dir, sep="\t", names=["seq", "target"])
+            df = df[df.seq.map(lambda x: "N" not in x)]  # No N in sequence
+            if self.normalize:
+                df["target"] = (df.target - 11) / 2
+            kfold = KFold(n_splits=5, shuffle=True, random_state=123456789)
+            for i, (train_idx, val_idx) in enumerate(kfold.split(df)):
+                if i == self.hparams.fold:
+                    break
+            train_df = df.iloc[train_idx]
+            val_df = df.iloc[val_idx]
+            self.train_data = self.dataset(train_df)
+            self.val_data = self.dataset(val_df)
+        
+        if stage == "test" or stage == None:
+            test_df = pd.read_csv(self.hparams.test_dir, sep="\t", names=["seq", "target"])
+            self.test_data = self.dataset(test_df)
