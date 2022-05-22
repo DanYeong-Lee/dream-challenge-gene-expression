@@ -1,6 +1,6 @@
 _target_: src.models.model.ConjoinedNet_AW
 lr: 0.001
-weight_decay: 0.001
+weight_decay: 0.01
 net:
   _target_: src.models.components.deepfamq.DeepFamQ
   conv_out_dim: 320
