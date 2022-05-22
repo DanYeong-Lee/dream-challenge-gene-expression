@@ -157,17 +157,19 @@ class ConjoinedNet_CA(ConjoinedNet):
     def __init__(
         self,
         net: nn.Module,
-        lr: float = 1e-3,
+        lr: float = 1e-4,
         weight_decay: float = 0,
-        first_cycle_steps: int = 1000,
+        first_cycle_steps: int = 3,
         cycle_mult: float = 1.0,
-        min_lr: float = 0.0001,
-        warmup_steps: int = 50,
+        max_lr: float = 1e-2,
+        min_lr: float = 1e-4,
+        warmup_steps: int = 2,
         gamma: float = 1.0
     ):
         super().__init__(net, lr, weight_decay)
         self.first_cycle_steps = first_cycle_steps
         self.cycle_mult = cycle_mult
+        self.max_lr = max_lr
         self.min_lr = min_lr
         self.warmup_steps = warmup_steps
         self.gamma = gamma
@@ -187,7 +189,7 @@ class ConjoinedNet_CA(ConjoinedNet):
             optimizer,
             first_cycle_steps=self.first_cycle_steps,
             cycle_mult=self.cycle_mult,
-            max_lr=self.hparams.lr,
+            max_lr=self.max_lr,
             min_lr=self.min_lr,
             warmup_steps=self.warmup_steps,
             gamma=self.gamma
@@ -202,17 +204,19 @@ class ConjoinedNet_AW_CA(ConjoinedNet):
     def __init__(
         self,
         net: nn.Module,
-        lr: float = 1e-3,
+        lr: float = 1e-4,
         weight_decay: float = 0,
-        first_cycle_steps: int = 1000,
+        first_cycle_steps: int = 3,
         cycle_mult: float = 1.0,
-        min_lr: float = 0.0001,
-        warmup_steps: int = 50,
+        max_lr: float = 1e-2,
+        min_lr: float = 1e-4,
+        warmup_steps: int = 2,
         gamma: float = 1.0
     ):
         super().__init__(net, lr, weight_decay)
         self.first_cycle_steps = first_cycle_steps
         self.cycle_mult = cycle_mult
+        self.max_lr = max_lr
         self.min_lr = min_lr
         self.warmup_steps = warmup_steps
         self.gamma = gamma
@@ -232,7 +236,7 @@ class ConjoinedNet_AW_CA(ConjoinedNet):
             optimizer,
             first_cycle_steps=self.first_cycle_steps,
             cycle_mult=self.cycle_mult,
-            max_lr=self.hparams.lr,
+            max_lr=self.max_lr,
             min_lr=self.min_lr,
             warmup_steps=self.warmup_steps,
             gamma=self.gamma
