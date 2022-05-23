@@ -1,0 +1,15 @@
+_target_: src.models.model.ConjoinedNet_AW
+lr: 0.001
+weight_decay: 0.01
+net:
+  _target_: src.models.components.deepfamq.DeepFamTrfm
+  conv_out_dim: 320
+  conv_kernel_size: [10, 15]
+  pool_size: 3
+  trfm_d_model: 320
+  nhead: 4
+  dim_feedforward: 512
+  fc_hidden_dim: 64
+  dropout1: 0.2
+  dropout2: 0.5
+  
