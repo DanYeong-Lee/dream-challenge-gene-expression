@@ -133,7 +133,7 @@ class ConjoinedNet(MainNet):
         losses = torch.stack([self.criterion(pred, y) for pred in preds])
         
         loss = losses.mean()
-        pred = torch.stack(preds).sum(dim=0)
+        pred = torch.stack(preds).mean(dim=0)
         
         return loss, pred, y
 
