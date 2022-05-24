@@ -5,7 +5,7 @@ from sklearn.model_selection import KFold
 import torch
 from torch.utils.data import Dataset, DataLoader
 from pytorch_lightning import LightningDataModule
-from src.datamodules.components.dataset import OneHotDataset, IndexDataset
+from src.datamodules.components.dataset import OneHotDataset, IndexDataset, ShiftDataset
 
 
     
@@ -17,6 +17,7 @@ class MyDataModule(LightningDataModule):
         batch_size: int = 1024, 
         num_workers: int = 4,
         fold: int = 0,
+        shift: bool = True,
         one_hot: bool = True,
         normalize: bool = True
     ):
@@ -26,13 +27,15 @@ class MyDataModule(LightningDataModule):
         self.train_data: Optional[Dataset] = None
         self.val_data: Optional[Dataset] = None
         self.test_data: Optional[Dataset] = None
-            
-        if one_hot:
+        
+        if shift:
+            self.dataset = ShiftDataset
+        elif one_hot:
             self.dataset = OneHotDataset
         else:
             self.dataset = IndexDataset
             
-        self.normalize = True
+        self.normalize = normalize
 
     def setup(self, stage=None):
         if stage == "fit" or stage == None:
