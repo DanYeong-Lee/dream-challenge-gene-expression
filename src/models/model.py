@@ -122,16 +122,18 @@ class ConjoinedNet(MainNet):
     ):
         super().__init__(net, lr, weight_decay)
     
-    def forward(self, fwd_x, rev_x):     
-        return self.net(fwd_x), self.net(rev_x)
+    def forward(self, tensors):     
+        return [self.net(tensor) for tensor in tensors]
     
     def step(self, batch):
-        fwd_x, rev_x, y = batch
-        fwd_pred, rev_pred = self(fwd_x, rev_x)
-        fwd_loss = self.criterion(fwd_pred, y)
-        rev_loss = self.criterion(rev_pred, y)
-        loss = (fwd_loss + rev_loss) / 2
-        pred = (fwd_pred + rev_pred) / 2
+        Xs = batch[: -1]
+        y = batch[-1]
+        
+        preds = self(Xs)
+        losses = torch.stack([self.criterion(pred, y) for pred in preds])
+        
+        loss = losses.mean()
+        pred = torch.stack(preds).sum(dim=0)
         
         return loss, pred, y
 
