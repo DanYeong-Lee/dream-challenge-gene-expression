@@ -13,7 +13,7 @@ class MyDataModule(LightningDataModule):
     def __init__(
         self, 
         train_dir: str = "/data/project/ddp/data/dream/train_sequences.txt",
-        test_dir: str = "/data/project/ddp/data/dream/test_sequences.txt"
+        test_dir: str = "/data/project/ddp/data/dream/test_sequences.txt",
         predict_dir: str = "/data/project/ddp/data/dream/test_sequences.txt",  
         batch_size: int = 1024, 
         num_workers: int = 4,
