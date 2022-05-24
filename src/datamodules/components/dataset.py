@@ -85,7 +85,7 @@ class ShiftDataset(Dataset):
             "N": [0., 0., 0., 0.]
         }
     
-    def seq2mat(self,seq, max_len=110):
+    def seq2mat(self, seq, max_len=110):
         if len(seq) > max_len:
             seq = seq[len(seq) - max_len :]
         else:
@@ -102,7 +102,7 @@ class ShiftDataset(Dataset):
     def random_shift(self, seq):
         long_seq = "AAC" + seq + "TCT"
         random_idx = np.random.choice([0, 1, 2, 4, 5, 6], size=3, replace=False)
-        shifted_seqs = [long_seq[i: i + 110] for i in random_idx]
+        shifted_seqs = [long_seq[i:] for i in random_idx]
         shifted_seqs.append(seq)
         
         return shifted_seqs

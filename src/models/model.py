@@ -143,7 +143,7 @@ class ConjoinedNet_AW(ConjoinedNet):
         self,
         net: nn.Module,
         lr: float = 1e-3,
-        weight_decay: float = 1e-5
+        weight_decay: float = 1e-2
     ):
         super().__init__(net, lr, weight_decay)
         
