@@ -33,6 +33,7 @@ class MainNet(LightningModule):
         
         self.train_r2 = R2Score()
         self.val_r2 = R2Score()
+        self.test_r2 = R2Score()
         
         # for logging best so far validation accuracy
         self.val_spearman_best = MaxMetric()
@@ -102,8 +103,20 @@ class MainNet(LightningModule):
         loss, preds, targets = self.step(batch)
         spearman = self.test_spearman(preds, targets)
         pearson = self.test_pearson(preds, targets)
-        metrics = {"test/loss": loss, "test/spearman": spearman, "test/pearson": pearson}
+        r2 = self.test_r2(preds, targets)
+        metrics = {"test/loss": loss, "test/spearman": spearman, "test/pearson": pearson, "test/r2": r2}
         self.log_dict(metrics, on_step=False, on_epoch=True, prog_bar=True)
+        
+    def predict_step(self, batch, batch_idx):
+        _, preds, _ = self.step(batch)
+        
+        return preds
+    
+    def predict_epoch_end(self, outputs):
+        whole_preds = torch.cat(outputs)
+        df = pd.read_csv("/data/project/ddp/data/dream/test_sequences.txt", sep="\t", names=["seq", "target"])
+        df.target = whole_preds
+        df.to_csv("submission.txt", sep="\t", index=False, header=None)
     
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), 

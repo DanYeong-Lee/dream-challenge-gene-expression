@@ -12,8 +12,9 @@ from src.datamodules.components.dataset import OneHotDataset, IndexDataset, Shif
 class MyDataModule(LightningDataModule):
     def __init__(
         self, 
-        train_dir: str = "/data/project/ddp/data/dream/train_sequences.txt", 
-        test_dir: str ="/data/project/ddp/data/dream/test_sequences.txt",  
+        train_dir: str = "/data/project/ddp/data/dream/train_sequences.txt",
+        test_dir: str = "/data/project/ddp/data/dream/test_sequences.txt"
+        predict_dir: str = "/data/project/ddp/data/dream/test_sequences.txt",  
         batch_size: int = 1024, 
         num_workers: int = 4,
         fold: int = 0,
@@ -54,6 +55,10 @@ class MyDataModule(LightningDataModule):
         if stage == "test" or stage == None:
             test_df = pd.read_csv(self.hparams.test_dir, sep="\t", names=["seq", "target"])
             self.test_data = self.dataset(test_df)
+            
+        if stage == "predict" or stage == None:
+            predict_df = pd.read_csv(self.hparams.predict_dir, sep="\t", names=["seq", "target"])
+            self.predict_data = self.dataset(predict_df)
     
     def train_dataloader(self):
         return DataLoader(
@@ -78,6 +83,16 @@ class MyDataModule(LightningDataModule):
     def test_dataloader(self):
         return DataLoader(
             dataset=self.test_data, 
+            batch_size=self.hparams.batch_size,
+            num_workers=self.hparams.num_workers,
+            shuffle=False,
+            drop_last=False,
+            pin_memory=True
+        )
+    
+    def predict_dataloader(self):
+        return DataLoader(
+            dataset=self.predict_data, 
             batch_size=self.hparams.batch_size,
             num_workers=self.hparams.num_workers,
             shuffle=False,
