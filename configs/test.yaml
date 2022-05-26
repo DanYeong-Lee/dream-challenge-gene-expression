@@ -4,9 +4,9 @@
 defaults:
   - _self_
   - datamodule: default.yaml
-  - model: base_transformer.yaml
-  - callbacks: default.yaml
-  - logger: null
+  - model: deepfamq_conjoined.yaml
+  - callbacks: none.yaml
+  - logger: none.yaml
   - trainer: default.yaml
   - log_dir: default.yaml
 

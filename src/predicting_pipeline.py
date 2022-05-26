@@ -54,4 +54,4 @@ def predict(config: DictConfig) -> None:
         trainer.logger.log_hyperparams({"ckpt_path": config.ckpt_path})
 
     log.info("Starting testing!")
-    trainer.test(model=model, datamodule=datamodule, ckpt_path=config.ckpt_path)
+    trainer.predict(model=model, datamodule=datamodule, ckpt_path=config.ckpt_path)
