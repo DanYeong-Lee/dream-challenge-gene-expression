@@ -1,4 +1,5 @@
 from typing import Any, List
+import pandas as pd
 
 import torch
 import torch.nn as nn
@@ -112,11 +113,12 @@ class MainNet(LightningModule):
         
         return preds
     
-    def predict_epoch_end(self, outputs):
-        whole_preds = torch.cat(outputs)
+    def on_predict_epoch_end(self, outputs):
+        whole_preds = torch.cat(outputs[0])
         df = pd.read_csv("/data/project/ddp/data/dream/test_sequences.txt", sep="\t", names=["seq", "target"])
         df.target = whole_preds
         df.to_csv("submission.txt", sep="\t", index=False, header=None)
+        print("Saved submission file!")
     
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), 

@@ -5,8 +5,8 @@ defaults:
   - _self_
   - datamodule: default.yaml
   - model: base_transformer.yaml
-  - callbacks: default.yaml
-  - logger: null
+  - callbacks: none.yaml
+  - logger: none.yaml
   - trainer: default.yaml
   - log_dir: default.yaml
 
@@ -26,5 +26,7 @@ seed: 42
 
 name: "default"
 
+fold: 0
+
 # passing checkpoint path is necessary
-ckpt_path: ???
+ckpt_path: logs/experiments/runs/${name}/fold${fold}/checkpoints/best.ckpt
