@@ -47,4 +47,5 @@ seed: 42
 name: "default"
 
 # used for K-fold cross-validation
+# If set to "all", train with whole training set & validate with HQ_testdata
 fold: 0
