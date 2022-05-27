@@ -110,7 +110,7 @@ class NlessDataModule(MyDataModule):
         batch_size: int = 1024, 
         num_workers: int = 4,
         fold: int = 0,
-        shift: bool = False
+        shift: bool = False,
         one_hot: bool = True,
         normalize: bool = True
     ):
