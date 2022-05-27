@@ -114,7 +114,7 @@ class NlessDataModule(MyDataModule):
         one_hot: bool = True,
         normalize: bool = True
     ):
-        super().__init__(train_dir, test_dir, batch_size, num_workers, fold, one_hot, normalize)
+        super().__init__(train_dir, test_dir, batch_size, num_workers, shift, fold, one_hot, normalize)
         
     
     def setup(self, stage=None):
