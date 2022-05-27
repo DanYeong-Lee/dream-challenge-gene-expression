@@ -17,7 +17,7 @@ class MyDataModule(LightningDataModule):
         predict_dir: str = "/data/project/ddp/data/dream/test_sequences.txt",  
         batch_size: int = 1024, 
         num_workers: int = 4,
-        fold: Union[int, str] = "all",
+        fold: Union[int, str] = "None",
         shift: bool = False,
         one_hot: bool = True,
         normalize: bool = True
@@ -38,7 +38,7 @@ class MyDataModule(LightningDataModule):
     
     def setup(self, stage=None):
         if stage == "fit" or stage == None:
-            if self.hparams.fold != "all":
+            if self.hparams.fold != "None":
                 df = pd.read_csv(self.hparams.train_dir, sep="\t", names=["seq", "target"])
                 if self.hparams.normalize:
                     df["target"] = (df.target - 11) / 2
