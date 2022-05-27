@@ -129,7 +129,7 @@ class NlessDataModule(MyDataModule):
         if stage == "fit" or stage == None:
             df = pd.read_csv(self.hparams.train_dir, sep="\t", names=["seq", "target"])
             df = df[df.seq.map(lambda x: "N" not in x)]  # No N in sequence
-            if self.normalize:
+            if self.hparams.normalize:
                 df["target"] = (df.target - 11) / 2
             kfold = KFold(n_splits=5, shuffle=True, random_state=123456789)
             for i, (train_idx, val_idx) in enumerate(kfold.split(df)):
