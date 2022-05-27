@@ -18,7 +18,7 @@ class MyDataModule(LightningDataModule):
         batch_size: int = 1024, 
         num_workers: int = 4,
         fold: int = 0,
-        shift: bool = True,
+        shift: bool = False,
         one_hot: bool = True,
         normalize: bool = True
     ):
@@ -110,6 +110,7 @@ class NlessDataModule(MyDataModule):
         batch_size: int = 1024, 
         num_workers: int = 4,
         fold: int = 0,
+        shift: bool = False
         one_hot: bool = True,
         normalize: bool = True
     ):

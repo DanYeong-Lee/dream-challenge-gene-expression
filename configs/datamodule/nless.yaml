@@ -5,5 +5,6 @@ test_dir: ${oc.env:TEST_DATA}
 batch_size: 1024
 num_workers: 4
 fold: ${fold}
+shift: False
 one_hot: True
 normalize: True
