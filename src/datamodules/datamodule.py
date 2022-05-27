@@ -13,7 +13,7 @@ class MyDataModule(LightningDataModule):
     def __init__(
         self, 
         train_dir: str = "/data/project/ddp/data/dream/train_sequences.txt",
-        test_dir: str = "/data/project/ddp/data/dream/test_sequences.txt",
+        test_dir: str = "/data/project/ddp/data/nat2022/HQ_testdata.txt",
         predict_dir: str = "/data/project/ddp/data/dream/test_sequences.txt",  
         batch_size: int = 1024, 
         num_workers: int = 4,
@@ -54,6 +54,9 @@ class MyDataModule(LightningDataModule):
         
         if stage == "test" or stage == None:
             test_df = pd.read_csv(self.hparams.test_dir, sep="\t", names=["seq", "target"])
+            if self.normalize:
+                test_df["target"] = (test_df.target - 11) / 2
+                
             self.test_data = self.dataset(test_df)
             
         if stage == "predict" or stage == None:

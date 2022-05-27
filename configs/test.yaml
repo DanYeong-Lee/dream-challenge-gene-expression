@@ -6,7 +6,7 @@ defaults:
   - datamodule: default.yaml
   - model: deepfamq_conjoined.yaml
   - callbacks: none.yaml
-  - logger: none.yaml
+  - logger: test.yaml
   - trainer: default.yaml
   - log_dir: default.yaml
 
@@ -25,6 +25,8 @@ ignore_warnings: True
 seed: 42
 
 name: "default"
+
+fold: 0
 
 # passing checkpoint path is necessary
 ckpt_path: ???
