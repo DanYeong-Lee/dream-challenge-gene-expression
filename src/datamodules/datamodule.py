@@ -29,9 +29,9 @@ class MyDataModule(LightningDataModule):
         self.val_data: Optional[Dataset] = None
         self.test_data: Optional[Dataset] = None
         
-        if shift:
+        if self.hparams.shift:
             self.dataset = ShiftDataset
-        elif one_hot:
+        elif self.hparams.one_hot:
             self.dataset = OneHotDataset
         else:
             self.dataset = IndexDataset
