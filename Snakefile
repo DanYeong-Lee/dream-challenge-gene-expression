@@ -1,7 +1,7 @@
 
-models = ["deepfamq_conjoined_adamw"]
+models = ["deepfamq_conjoined_adamw_gru"]
 
-folds = [1, 2, 3, 4]
+folds = [0, 1, 2, 3, 4]
 #folds = [0, 1, 2, 3, 4]
 
 ALL = expand("logs/experiments/runs/{model}_std_nless/fold{fold}/checkpoints/best.ckpt", model=models, fold=folds)
