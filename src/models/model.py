@@ -117,7 +117,7 @@ class MainNet(LightningModule):
         whole_preds = torch.cat(outputs[0])
         df = pd.read_csv("/data/project/ddp/data/dream/test_sequences.txt", sep="\t", names=["seq", "target"])
         df.target = whole_preds
-        df.to_csv("submission.txt", sep="\t", index=False, header=None)
+        df.to_csv("../../../../../submission.txt", sep="\t", index=False, header=None)
         print("Saved submission file!")
     
     def configure_optimizers(self):
