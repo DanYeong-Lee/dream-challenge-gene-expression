@@ -1,11 +1,7 @@
-_target_: src.models.model.ConjoinedNet_CAW
+_target_: src.models.model.ConjoinedNet_AW_CA
 lr: 0.001
-weight_decay: 0
-first_cycle_steps: 2
-cycle_mult: 2
-min_lr: 0.0001
-warmup_steps: 1
-gamma: 0.9
+weight_decay: 0.01
+max_epochs: 20
 net:
   _target_: src.models.components.deepfamq.DeepFamQ
   conv_out_dim: 320

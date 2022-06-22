@@ -207,7 +207,7 @@ class ConjoinedNet_AW(ConjoinedNet):
                                 weight_decay=self.hparams.weight_decay)
     
     
-class ConjoinedNet_CA(ConjoinedNet):
+class ConjoinedNet_CAW(ConjoinedNet):
     """Post-hoc conjoined setting"""
     """+ CosineAnnealingWarmupRestarts"""
     def __init__(
@@ -247,9 +247,63 @@ class ConjoinedNet_CA(ConjoinedNet):
         )
         
         return [optimizer], [scheduler]
+    
+    
+class ConjoinedNet_CA(ConjoinedNet):
+    """Post-hoc conjoined setting"""
+    """+ CosineAnnealing"""
+    def __init__(
+        self,
+        net: nn.Module,
+        lr: float = 1e-4,
+        weight_decay: float = 0,
+        max_epochs: int = 20
+    ):
+        super().__init__(net, lr, weight_decay)
+        self.max_epochs = max_epochs
+    
+    def configure_optimizers(self):
+        optimizer = torch.optim.Adam(
+            self.parameters(), 
+            lr=self.hparams.lr, 
+            weight_decay=self.hparams.weight_decay
+        )
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer,
+            T_max=self.max_epochs
+        )
+        
+        return [optimizer], [scheduler]
 
     
 class ConjoinedNet_AW_CA(ConjoinedNet):
+    """Post-hoc conjoined setting"""
+    """+ CosineAnnealing"""
+    def __init__(
+        self,
+        net: nn.Module,
+        lr: float = 1e-4,
+        weight_decay: float = 0,
+        max_epochs: int = 20
+    ):
+        super().__init__(net, lr, weight_decay)
+        self.max_epochs = max_epochs
+    
+    def configure_optimizers(self):
+        optimizer = torch.optim.AdamW(
+            self.parameters(), 
+            lr=self.hparams.lr, 
+            weight_decay=self.hparams.weight_decay
+        )
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer,
+            T_max=self.max_epochs
+        )
+        
+        return [optimizer], [scheduler]
+    
+    
+class ConjoinedNet_AW_CAW(ConjoinedNet):
     """Post-hoc conjoined setting"""
     """+ CosineAnnealingWarmupRestarts"""
     def __init__(
