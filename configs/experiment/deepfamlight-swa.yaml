@@ -1,0 +1,50 @@
+# @package _global_
+
+# to execute this experiment run:
+# python train.py experiment=example
+
+defaults:
+  - override /datamodule: default.yaml
+  - override /model: DeepFamLight.yaml
+  - override /callbacks: swa.yaml
+  #- override /logger: mywandb.yaml
+  - override /trainer: default.yaml
+
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+logger:
+  wandb:
+    entity: "danyeong-lee"
+    tags: []
+
+callbacks:
+  stochastic_weight_averaging:
+    swa_epoch_start: 12
+    swa_lrs: 1e-5
+    annealing_epochs: 12
+
+trainer:
+  min_epochs: 1
+  max_epochs: 20
+  gpus: [1]
+
+model:
+  _target_: src.models.model.ConjoinedNet_AW
+  lr: 1e-3
+  weight_decay: 0.1
+  net:
+    _target_: src.models.components.deepfamlight.DeepFamLight
+    conv_out_dim: 320
+    conv_kernel_size: [10, 15]
+    rnn_hidden_dim: 320
+    fc_hidden_dim: 64
+    dropout1: 0.2
+    dropout2: 0.5
+
+
+fold: 0
+
+name: "deepfamlight-swa"
+
+seed: 42
