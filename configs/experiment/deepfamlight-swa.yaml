@@ -22,7 +22,7 @@ callbacks:
   stochastic_weight_averaging:
     swa_epoch_start: 12
     swa_lrs: 1e-5
-    annealing_epochs: 12
+    annealing_epochs: 3
 
 trainer:
   min_epochs: 1
@@ -30,9 +30,10 @@ trainer:
   gpus: [1]
 
 model:
-  _target_: src.models.model.ConjoinedNet_AW
+  _target_: src.models.model.ConjoinedNet_AW_CA
   lr: 1e-3
   weight_decay: 0.1
+  max_epochs: 12
   net:
     _target_: src.models.components.deepfamlight.DeepFamLight
     conv_out_dim: 320
