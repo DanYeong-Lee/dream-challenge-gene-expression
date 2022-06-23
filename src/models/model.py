@@ -263,6 +263,8 @@ class ConjoinedNet_CA(ConjoinedNet):
         self.max_epochs = max_epochs
     
     def configure_optimizers(self):
+        n_steps = len(self.trainer._data_connector._train_dataloader_source.dataloader())
+        
         optimizer = torch.optim.Adam(
             self.parameters(), 
             lr=self.hparams.lr, 
@@ -270,10 +272,10 @@ class ConjoinedNet_CA(ConjoinedNet):
         )
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
             optimizer,
-            T_max=self.max_epochs
+            T_max=self.max_epochs * n_steps
         )
         
-        return [optimizer], [scheduler]
+        return [optimizer], [{"scheduler": scheduler, "interval": "step"}]
 
     
 class ConjoinedNet_AW_CA(ConjoinedNet):
@@ -290,6 +292,8 @@ class ConjoinedNet_AW_CA(ConjoinedNet):
         self.max_epochs = max_epochs
     
     def configure_optimizers(self):
+        n_steps = len(self.trainer._data_connector._train_dataloader_source.dataloader())
+        
         optimizer = torch.optim.AdamW(
             self.parameters(), 
             lr=self.hparams.lr, 
@@ -297,10 +301,10 @@ class ConjoinedNet_AW_CA(ConjoinedNet):
         )
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
             optimizer,
-            T_max=self.max_epochs
+            T_max=self.max_epochs * n_steps
         )
         
-        return [optimizer], [scheduler]
+        return [optimizer], [{"scheduler": scheduler, "interval": "step"}]
     
     
 class ConjoinedNet_AW_CAW(ConjoinedNet):
