@@ -60,7 +60,7 @@ class DeepFamLight(nn.Module):
             conv_outs.append(conv(x))
         x = torch.cat(conv_outs, dim=1)  # (N, C, L)
         x = x.permute(2, 0, 1)  # (L, N, C)
-        x, _ = self.rnn(x)  # (N, C)
+        _, x = self.rnn(x)  # (N, C)
         x = self.fc(x)
         x = x.squeeze()
         

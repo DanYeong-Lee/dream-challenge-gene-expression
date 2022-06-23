@@ -23,7 +23,6 @@ trainer:
   min_epochs: 1
   max_epochs: 12
   gpus: [1]
-  enable_progress_bar: False
 
 model:
   _target_: src.models.model.ConjoinedNet_AW_CA
@@ -34,7 +33,7 @@ model:
     _target_: src.models.components.deepfamlight.DeepFamLight
     conv_out_dim: 320
     conv_kernel_size: [10, 15]
-    lstm_hidden_dim: 320
+    rnn_hidden_dim: 320
     fc_hidden_dim: 64
     dropout1: 0.2
     dropout2: 0.5
