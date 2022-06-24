@@ -1,0 +1,9 @@
+_target_: src.models.model.MainNet
+lr: 1e-3
+weight_decay: 0
+net:
+  _target_: src.models.components.toy.Toy
+  conv_out_dim: 256
+  conv_kernel_size: 10
+  pool_size: 3
+  fc_hidden_dim: 64

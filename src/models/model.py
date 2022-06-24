@@ -13,6 +13,7 @@ from cosine_annealing_warmup import CosineAnnealingWarmupRestarts
 
 class MainNet(LightningModule):
     """Main default network"""
+    """Use only forward strand"""
     def __init__(
         self,
         net: nn.Module,
@@ -44,8 +45,8 @@ class MainNet(LightningModule):
         self.val_pearson_best = MaxMetric()
         self.val_r2_best = MaxMetric()
         
-    def forward(self, fwd_x, rev_x):        
-        return self.net(fwd_x, rev_x)
+    def forward(self, fwd_x):        
+        return self.net(fwd_x)
     
     def on_train_start(self):
         # by default lightning executes validation step sanity checks before training starts,
@@ -56,7 +57,7 @@ class MainNet(LightningModule):
     
     def step(self, batch):
         fwd_x, rev_x, y = batch
-        preds = self(fwd_x, rev_x)
+        preds = self(fwd_x)
         loss = self.criterion(preds, y)
         
         return loss, preds, y
@@ -164,6 +165,26 @@ class MainNet(LightningModule):
                                 lr=self.hparams.lr, 
                                 weight_decay=self.hparams.weight_decay)
     
+
+class DSNet(MainNet):
+    def __init__(
+        self,
+        net: nn.Module,
+        lr: float = 1e-3,
+        weight_decay: float = 1e-5,
+        
+    ):
+        super().__init__(net, lr, weight_decay)
+    
+    def forward(self, fwd_x, rev_x):        
+        return self.net(fwd_x, rev_x)
+    
+    def step(self, batch):
+        fwd_x, rev_x, y = batch
+        preds = self(fwd_x, rev_x)
+        loss = self.criterion(preds, y)
+        
+        return loss, preds, y
     
     
 class ConjoinedNet(MainNet):
@@ -257,10 +278,12 @@ class ConjoinedNet_CA(ConjoinedNet):
         net: nn.Module,
         lr: float = 1e-4,
         weight_decay: float = 0,
-        max_epochs: int = 20
+        max_epochs: int = 20,
+        eta_min: float = 0.0
     ):
         super().__init__(net, lr, weight_decay)
         self.max_epochs = max_epochs
+        self.eta_min = eta_min
     
     def configure_optimizers(self):
         n_steps = len(self.trainer._data_connector._train_dataloader_source.dataloader())
@@ -272,7 +295,8 @@ class ConjoinedNet_CA(ConjoinedNet):
         )
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
             optimizer,
-            T_max=self.max_epochs * n_steps
+            T_max=self.max_epochs * n_steps,
+            eta_min=self.eta_min
         )
         
         return [optimizer], [{"scheduler": scheduler, "interval": "step"}]
@@ -286,10 +310,12 @@ class ConjoinedNet_AW_CA(ConjoinedNet):
         net: nn.Module,
         lr: float = 1e-4,
         weight_decay: float = 0,
-        max_epochs: int = 20
+        max_epochs: int = 20,
+        eta_min: float = 0.0
     ):
         super().__init__(net, lr, weight_decay)
         self.max_epochs = max_epochs
+        self.eta_min = eta_min
     
     def configure_optimizers(self):
         n_steps = len(self.trainer._data_connector._train_dataloader_source.dataloader())
@@ -301,7 +327,8 @@ class ConjoinedNet_AW_CA(ConjoinedNet):
         )
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
             optimizer,
-            T_max=self.max_epochs * n_steps
+            T_max=self.max_epochs * n_steps,
+            eta_min=self.eta_min
         )
         
         return [optimizer], [{"scheduler": scheduler, "interval": "step"}]
@@ -347,3 +374,34 @@ class ConjoinedNet_AW_CAW(ConjoinedNet):
         )
         
         return [optimizer], [scheduler]
+    
+    
+    
+class MainNet_CA(MainNet):
+    def __init__(
+        self,
+        net: nn.Module,
+        lr: float = 1e-4,
+        weight_decay: float = 0,
+        max_epochs: int = 20,
+        eta_min: float = 0.0
+    ):
+        super().__init__(net, lr, weight_decay)
+        self.max_epochs = max_epochs
+        self.eta_min = eta_min
+    
+    def configure_optimizers(self):
+        n_steps = len(self.trainer._data_connector._train_dataloader_source.dataloader())
+        
+        optimizer = torch.optim.Adam(
+            self.parameters(), 
+            lr=self.hparams.lr, 
+            weight_decay=self.hparams.weight_decay
+        )
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer,
+            T_max=self.max_epochs * n_steps,
+            eta_min=self.eta_min
+        )
+        
+        return [optimizer], [{"scheduler": scheduler, "interval": "step"}]
