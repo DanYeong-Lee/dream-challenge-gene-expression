@@ -6,7 +6,7 @@
 defaults:
   - override /datamodule: default.yaml
   - override /model: Toy.yaml
-  - override /callbacks: no_es.yaml
+  - override /callbacks: swa.yaml
   #- override /logger: mywandb.yaml
   - override /trainer: default.yaml
 
@@ -18,16 +18,25 @@ logger:
     entity: "danyeong-lee"
     tags: []
 
+callbacks:
+  stochastic_weight_averaging:
+    swa_epoch_start: 10
+    swa_lrs: 1e-4
+    annealing_epochs: 3
 
 trainer:
   min_epochs: 1
-  max_epochs: 10
+  max_epochs: 20
   gpus: [1]
+  limit_train_batches: 0.01
+  limit_val_batches: 0.01
 
 model:
   _target_: src.models.model.MainNet_CA
   lr: 1e-3
   weight_decay: 0
+  max_epochs: 10
+  eta_min: 1e-4
   net:
     _target_: src.models.components.toy.Toy
     conv_out_dim: 256
