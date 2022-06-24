@@ -47,6 +47,6 @@ model:
 
 fold: 0
 
-name: "toy"
+name: "toy-swa"
 
 seed: 42
