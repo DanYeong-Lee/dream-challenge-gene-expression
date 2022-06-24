@@ -35,7 +35,6 @@ model:
     conv_out_dim: 256
     conv_kernel_size: 10
     pool_size: 3
-    fc_hidden_dim: 64
 
 
 fold: 0

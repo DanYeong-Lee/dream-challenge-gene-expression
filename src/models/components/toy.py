@@ -33,7 +33,6 @@ class Toy(nn.Module):
         conv_out_dim: int = 256,
         conv_kernel_size: int = 10,
         pool_size: int = 3,
-        fc_hidden_dim: int = 64,
     ):
         super().__init__()
         conv_out_len = 110 - conv_kernel_size + 1
@@ -43,9 +42,7 @@ class Toy(nn.Module):
         self.conv_block = ConvBlock(4, conv_out_dim, conv_kernel_size, pool_size)
         self.fc = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(fc_input_dim, fc_hidden_dim),
-            nn.ReLU(),
-            nn.Linear(fc_hidden_dim, fc_hidden_dim),
+            nn.Linear(fc_input_dim)
             nn.ReLU(),
             nn.Linear(fc_hidden_dim, 1)
         )
