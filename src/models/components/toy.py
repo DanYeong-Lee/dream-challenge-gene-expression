@@ -17,4 +17,4 @@ class Toy(nn.Module):
         )
     
     def forward(self, x):
-        return self.main(x)
+        return self.main(x).squeeze()

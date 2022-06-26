@@ -21,20 +21,20 @@ logger:
 
 trainer:
   min_epochs: 1
-  max_epochs: 10
+  max_epochs: 1
   gpus: [1]
+  limit_train_batches: 0.01
+  limit_val_batches: 0.01
 
 model:
   _target_: src.models.model.MainNet_CA
   lr: 1e-3
   weight_decay: 0
-  max_epochs: 10
+  max_epochs: 1
   eta_min: 0.0
   net:
     _target_: src.models.components.toy.Toy
-    conv_out_dim: 256
-    conv_kernel_size: 10
-    pool_size: 3
+    hidden_dim: 64
 
 
 fold: 0

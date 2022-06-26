@@ -5,7 +5,7 @@
 
 defaults:
   - override /datamodule: default.yaml
-  - override /model: DeepFamLight.yaml
+  - override /model: DeepFamQ.yaml
   - override /callbacks: no_es.yaml
   #- override /logger: mywandb.yaml
   - override /trainer: default.yaml
@@ -30,10 +30,11 @@ model:
   weight_decay: 0.1
   max_epochs: 12
   net:
-    _target_: src.models.components.deepfamlight.DeepFamLight
+    _target_: src.models.components.deepfamq.DeepFamQ
     conv_out_dim: 320
     conv_kernel_size: [9, 15]
-    rnn_hidden_dim: 320
+    pool_size: 5
+    lstm_hidden_dim: 320
     fc_hidden_dim: 64
     dropout1: 0.2
     dropout2: 0.5
@@ -41,6 +42,6 @@ model:
 
 fold: 0
 
-name: "deepfamlight"
+name: "deepfamq-pool5"
 
 seed: 42
