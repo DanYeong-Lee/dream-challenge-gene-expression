@@ -25,9 +25,9 @@ trainer:
   gpus: [1]
 
 model:
-  _target_: src.models.model.ConjoinedNet_AW_CA
+  _target_: src.models.model.MainNet_AW_CA
   lr: 1e-3
-  weight_decay: 0.01
+  weight_decay: 0
   max_epochs: 12
   net:
     _target_: src.models.components.deepfamq.DeepFamQ
@@ -42,6 +42,6 @@ model:
 
 fold: 0
 
-name: "deepfamq-pool5"
+name: "deepfamq-pool5-ss-wd0"
 
 seed: 42
