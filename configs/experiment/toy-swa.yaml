@@ -6,7 +6,7 @@
 defaults:
   - override /datamodule: default.yaml
   - override /model: Toy.yaml
-  - override /callbacks: no_es.yaml
+  - override /callbacks: swa.yaml
   #- override /logger: mywandb.yaml
   - override /trainer: default.yaml
 
@@ -18,6 +18,12 @@ logger:
     entity: "danyeong-lee"
     tags: []
 
+callbacks:
+  stochastic_weight_averaging:
+    swa_epoch_start: 12
+    swa_lrs: 1e-4
+    annealing_epochs: 1
+    annealing_strategy: "cos"
 
 trainer:
   min_epochs: 1
