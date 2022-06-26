@@ -5,7 +5,7 @@
 
 defaults:
   - override /datamodule: default.yaml
-  - override /model: Toy.yaml
+  - override /model: DeepFamQ.yaml
   - override /callbacks: no_es.yaml
   #- override /logger: mywandb.yaml
   - override /trainer: default.yaml
@@ -21,24 +21,27 @@ logger:
 
 trainer:
   min_epochs: 1
-  max_epochs: 10
+  max_epochs: 12
   gpus: [1]
 
 model:
-  _target_: src.models.model.MainNet_CA
+  _target_: src.models.model.ConjoinedNet_AW_CA
   lr: 1e-3
-  weight_decay: 0
-  max_epochs: 10
-  eta_min: 0.0
+  weight_decay: 0.1
+  max_epochs: 12
   net:
-    _target_: src.models.components.toy.Toy
-    conv_out_dim: 256
-    conv_kernel_size: 10
-    pool_size: 3
+    _target_: src.models.components.deepfamq.DeepFamQ
+    conv_out_dim: 320
+    conv_kernel_size: [9, 15]
+    pool_size: 1
+    lstm_hidden_dim: 320
+    fc_hidden_dim: 64
+    dropout1: 0
+    dropout2: 0.5
 
 
 fold: 0
 
-name: "toy"
+name: "deepfamq-pool1-kernels9+15-convdo0"
 
 seed: 42

@@ -102,18 +102,32 @@ class MainNet(LightningModule):
         epoch_pearson = self.val_pearson.compute()
         epoch_r2 = self.val_r2.compute()
         
-        # log epoch metrics
-        metrics = {"val/spearman": epoch_spearman, "val/pearson": epoch_pearson, "val/r2": epoch_r2}
-        self.log_dict(metrics, on_epoch=True, prog_bar=True)
-        
-        # log best metric
-        self.val_spearman_best.update(epoch_spearman)
-        self.val_pearson_best.update(epoch_pearson)
-        self.val_r2_best.update(epoch_r2)
-        self.log("val/spearman_best", self.val_spearman_best.compute(), on_epoch=True, prog_bar=True)
-        self.log("val/pearson_best", self.val_pearson_best.compute(), on_epoch=True, prog_bar=True)
-        self.log("val/r2_best", self.val_r2_best.compute(), on_epoch=True, prog_bar=True)
-        
+        if self.val_pearson.n_total.item() > 10000:
+            # CV
+            # log epoch metrics
+            metrics = {"val/spearman": epoch_spearman, "val/pearson": epoch_pearson, "val/r2": epoch_r2}
+            self.log_dict(metrics, on_epoch=True, prog_bar=True)
+
+            # log best metric
+            self.val_spearman_best.update(epoch_spearman)
+            self.val_pearson_best.update(epoch_pearson)
+            self.val_r2_best.update(epoch_r2)
+            self.log("val/spearman_best", self.val_spearman_best.compute(), on_epoch=True, prog_bar=True)
+            self.log("val/pearson_best", self.val_pearson_best.compute(), on_epoch=True, prog_bar=True)
+            self.log("val/r2_best", self.val_r2_best.compute(), on_epoch=True, prog_bar=True)
+        else:
+            # Validating with HQ_testata
+            metrics = {"test/full_spearman": epoch_spearman, "test/full_pearson": epoch_pearson, "test/full_r2": epoch_r2}
+            self.log_dict(metrics, on_epoch=True, prog_bar=True)
+
+            # log best metric
+            self.val_spearman_best.update(epoch_spearman)
+            self.val_pearson_best.update(epoch_pearson)
+            self.val_r2_best.update(epoch_r2)
+            self.log("test/full_spearman_best", self.val_spearman_best.compute(), on_epoch=True, prog_bar=True)
+            self.log("test/full_pearson_best", self.val_pearson_best.compute(), on_epoch=True, prog_bar=True)
+            self.log("test/full_r2_best", self.val_r2_best.compute(), on_epoch=True, prog_bar=True)
+            
         # reset val metrics
         self.val_spearman.reset()
         self.val_pearson.reset()
