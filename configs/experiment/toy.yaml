@@ -23,6 +23,9 @@ trainer:
   min_epochs: 1
   max_epochs: 10
   gpus: [1]
+  limit_train_batches: 0.01
+  limit_val_batches: 0.01
+  
 
 model:
   _target_: src.models.model.MainNet_CA
@@ -35,7 +38,6 @@ model:
     conv_out_dim: 256
     conv_kernel_size: 10
     pool_size: 3
-    fc_hidden_dim: 64
 
 
 fold: 0

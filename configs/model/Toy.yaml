@@ -1,6 +1,0 @@
-_target_: src.models.model.MainNet
-lr: 1e-3
-weight_decay: 0
-net:
-  _target_: src.models.components.toy.Toy
-  hidden_dim: 64
