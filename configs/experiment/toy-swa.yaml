@@ -1,0 +1,49 @@
+# @package _global_
+
+# to execute this experiment run:
+# python train.py experiment=example
+
+defaults:
+  - override /datamodule: default.yaml
+  - override /model: Toy.yaml
+  - override /callbacks: swa.yaml
+  #- override /logger: mywandb.yaml
+  - override /trainer: default.yaml
+
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+logger:
+  wandb:
+    entity: "danyeong-lee"
+    tags: []
+
+callbacks:
+  stochastic_weight_averaging:
+    swa_epoch_start: 12
+    swa_lrs: 1e-4
+    annealing_epochs: 1
+    annealing_strategy: "cos"
+
+trainer:
+  min_epochs: 1
+  max_epochs: 10
+  gpus: [1]
+
+model:
+  _target_: src.models.model.MainNet_CA
+  lr: 1e-3
+  weight_decay: 0
+  net:
+    _target_: src.models.components.toy.Toy
+    conv_out_dim: 256
+    conv_kernel_size: 10
+    pool_size: 3
+    fc_hidden_dim: 64
+
+
+fold: 0
+
+name: "toy"
+
+seed: 42
