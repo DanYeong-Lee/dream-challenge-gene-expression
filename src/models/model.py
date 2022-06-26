@@ -419,3 +419,33 @@ class MainNet_CA(MainNet):
         )
         
         return [optimizer], [{"scheduler": scheduler, "interval": "step"}]
+    
+    
+class MainNet_AW_CA(MainNet):
+    def __init__(
+        self,
+        net: nn.Module,
+        lr: float = 1e-4,
+        weight_decay: float = 0.1,
+        max_epochs: int = 20,
+        eta_min: float = 0.0
+    ):
+        super().__init__(net, lr, weight_decay)
+        self.max_epochs = max_epochs
+        self.eta_min = eta_min
+    
+    def configure_optimizers(self):
+        n_steps = len(self.trainer._data_connector._train_dataloader_source.dataloader())
+        
+        optimizer = torch.optim.AdamW(
+            self.parameters(), 
+            lr=self.hparams.lr, 
+            weight_decay=self.hparams.weight_decay
+        )
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer,
+            T_max=self.max_epochs * n_steps,
+            eta_min=self.eta_min
+        )
+        
+        return [optimizer], [{"scheduler": scheduler, "interval": "step"}]

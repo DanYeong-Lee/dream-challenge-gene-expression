@@ -20,30 +20,28 @@ logger:
 
 callbacks:
   stochastic_weight_averaging:
-    swa_epoch_start: 12
+    swa_epoch_start: 10
     swa_lrs: 1e-4
     annealing_epochs: 1
     annealing_strategy: "cos"
 
 trainer:
   min_epochs: 1
-  max_epochs: 10
+  max_epochs: 20
   gpus: [1]
 
 model:
-  _target_: src.models.model.MainNet_CA
+  _target_: src.models.model.MainNet_AW_CA
   lr: 1e-3
-  weight_decay: 0
+  weight_decay: 0.1
+  max_epochs: 10
   net:
     _target_: src.models.components.toy.Toy
-    conv_out_dim: 256
-    conv_kernel_size: 10
-    pool_size: 3
-    fc_hidden_dim: 64
+    hidden_dim: 64
 
 
 fold: 0
 
-name: "toy"
+name: "toy-swa"
 
 seed: 42
