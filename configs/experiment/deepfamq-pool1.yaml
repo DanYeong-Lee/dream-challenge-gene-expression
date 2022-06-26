@@ -26,12 +26,12 @@ trainer:
 model:
   _target_: src.models.model.ConjoinedNet_AW_CA
   lr: 1e-3
-  weight_decay: 0.1
+  weight_decay: 0
   max_epochs: 12
   net:
     _target_: src.models.components.deepfamq.DeepFamQ
     conv_out_dim: 320
-    conv_kernel_size: [10, 15]
+    conv_kernel_size: [9, 15]
     pool_size: 1
     lstm_hidden_dim: 320
     fc_hidden_dim: 64
@@ -41,6 +41,6 @@ model:
 
 fold: 0
 
-name: "deepfamq-pool1"
+name: "deepfamq-pool1-lightning"
 
 seed: 42

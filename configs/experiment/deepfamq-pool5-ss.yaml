@@ -6,7 +6,7 @@
 defaults:
   - override /datamodule: default.yaml
   - override /model: DeepFamQ.yaml
-  - override /callbacks: swa.yaml
+  - override /callbacks: no_es.yaml
   #- override /logger: mywandb.yaml
   - override /trainer: default.yaml
 
@@ -18,28 +18,22 @@ logger:
     entity: "danyeong-lee"
     tags: []
 
-callbacks:
-  stochastic_weight_averaging:
-    swa_epoch_start: 12
-    swa_lrs: 1e-4
-    annealing_epochs: 3
 
 trainer:
   min_epochs: 1
-  max_epochs: 20
+  max_epochs: 12
   gpus: [1]
 
 model:
-  _target_: src.models.model.ConjoinedNet_AW_CA
+  _target_: src.models.model.MainNet_AW_CA
   lr: 1e-3
-  weight_decay: 0.1
+  weight_decay: 0.01
   max_epochs: 12
-  eta_min: 1e-4
   net:
     _target_: src.models.components.deepfamq.DeepFamQ
     conv_out_dim: 320
-    conv_kernel_size: [10, 15]
-    pool_size: 1
+    conv_kernel_size: [9, 15]
+    pool_size: 5
     lstm_hidden_dim: 320
     fc_hidden_dim: 64
     dropout1: 0.2
@@ -48,6 +42,6 @@ model:
 
 fold: 0
 
-name: "deepfamq-pool1-swa"
+name: "deepfamq-pool5-ss"
 
 seed: 42
