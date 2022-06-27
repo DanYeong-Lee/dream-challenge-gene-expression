@@ -36,12 +36,12 @@ model:
     pool_size: 5
     lstm_hidden_dim: 320
     fc_hidden_dim: 64
-    dropout1: 0.
-    dropout2: 0.5
+    dropout1: 0.2
+    dropout2: 0.
 
 
 fold: 0
 
-name: "deepfamq-pool5-ss-convdo0"
+name: "deepfamq-pool5-ss-lstmdo0"
 
 seed: 42
