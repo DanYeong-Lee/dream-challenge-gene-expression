@@ -24,6 +24,16 @@ callbacks:
     swa_epoch_start: 12
     swa_lrs: 5e-4
     annealing_epochs: 1
+  model_checkpoint:
+    _target_: pytorch_lightning.callbacks.ModelCheckpoint
+    monitor: "val/pearson" # name of the logged metric which determines when model is improving
+    mode: "max" # "max" means higher metric value is better, can be also "min"
+    save_top_k: 1 # save k best models (determined by above metric)
+    save_last: True
+    verbose: False
+    dirpath: "checkpoints"
+    filename: "best"
+    auto_insert_metric_name: False
 
 trainer:
   min_epochs: 1
@@ -48,6 +58,6 @@ model:
 
 fold: 0
 
-name: "deepfamq-pool5-ss"
+name: "deepfamq-pool5-ss-swa"
 
 seed: 42
