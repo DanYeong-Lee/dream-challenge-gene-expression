@@ -7,7 +7,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 from pytorch_lightning import LightningModule
-from torchmetrics import MaxMetric, PearsonCorrCoef, SpearmanCorrCoef, R2Score
+from torchmetrics import MaxMetric, PearsonCorrCoef, SpearmanCorrCoef
 from cosine_annealing_warmup import CosineAnnealingWarmupRestarts
 
 
@@ -36,14 +36,9 @@ class MainNet(LightningModule):
         self.val_spearman = SpearmanCorrCoef()
         self.test_spearman = SpearmanCorrCoef()
         
-        self.train_r2 = R2Score()
-        self.val_r2 = R2Score()
-        self.test_r2 = R2Score()
-        
         # for logging best so far validation accuracy
         self.val_spearman_best = MaxMetric()
         self.val_pearson_best = MaxMetric()
-        self.val_r2_best = MaxMetric()
         
     def forward(self, fwd_x):        
         return self.net(fwd_x)
@@ -53,7 +48,6 @@ class MainNet(LightningModule):
         # so we need to make sure val_acc_best doesn't store accuracy from these checks
         self.val_spearman_best.reset()
         self.val_pearson_best.reset()
-        self.val_r2_best.reset()
     
     def step(self, batch):
         fwd_x, rev_x, y = batch
@@ -66,7 +60,6 @@ class MainNet(LightningModule):
         loss, preds, targets = self.step(batch)
         batch_spearman = self.train_spearman(preds, targets)
         batch_pearson = self.train_pearson(preds, targets)
-        batch_r2 = self.train_r2(preds, targets)
         metrics = {"train/loss_batch": loss}
         self.log_dict(metrics, on_step=False, on_epoch=True, prog_bar=True)
         
@@ -76,22 +69,19 @@ class MainNet(LightningModule):
         # get metric from current epoch
         epoch_spearman = self.train_spearman.compute()
         epoch_pearson = self.train_pearson.compute()
-        epoch_r2 = self.train_r2.compute()
         
         # log epoch metrics
-        metrics = {"train/spearman": epoch_spearman, "train/pearson": epoch_pearson, "train/r2": epoch_r2}
+        metrics = {"train/spearman": epoch_spearman, "train/pearson": epoch_pearson}
         self.log_dict(metrics, on_step=False, on_epoch=True, prog_bar=True)
         
         # reset metrics
         self.train_spearman.reset()
         self.train_pearson.reset()
-        self.train_r2.reset()
         
     def validation_step(self, batch, batch_idx):
         loss, preds, targets = self.step(batch)
         self.val_spearman.update(preds, targets)
         self.val_pearson.update(preds, targets)
-        self.val_r2.update(preds, targets)
         
         metrics = {"val/loss": loss}
         self.log_dict(metrics, on_step=False, on_epoch=True, prog_bar=True)
@@ -100,44 +90,37 @@ class MainNet(LightningModule):
         # get val metric from current epoch
         epoch_spearman = self.val_spearman.compute()
         epoch_pearson = self.val_pearson.compute()
-        epoch_r2 = self.val_r2.compute()
         
         if self.val_pearson.n_total.item() > 10000:
             # CV
             # log epoch metrics
-            metrics = {"val/spearman": epoch_spearman, "val/pearson": epoch_pearson, "val/r2": epoch_r2}
+            metrics = {"val/spearman": epoch_spearman, "val/pearson": epoch_pearson}
             self.log_dict(metrics, on_epoch=True, prog_bar=True)
 
             # log best metric
             self.val_spearman_best.update(epoch_spearman)
             self.val_pearson_best.update(epoch_pearson)
-            self.val_r2_best.update(epoch_r2)
             self.log("val/spearman_best", self.val_spearman_best.compute(), on_epoch=True, prog_bar=True)
             self.log("val/pearson_best", self.val_pearson_best.compute(), on_epoch=True, prog_bar=True)
-            self.log("val/r2_best", self.val_r2_best.compute(), on_epoch=True, prog_bar=True)
         else:
             # Validating with HQ_testata
-            metrics = {"test/full_spearman": epoch_spearman, "test/full_pearson": epoch_pearson, "test/full_r2": epoch_r2}
+            metrics = {"test/full_spearman": epoch_spearman, "test/full_pearson": epoch_pearson}
             self.log_dict(metrics, on_epoch=True, prog_bar=True)
 
             # log best metric
             self.val_spearman_best.update(epoch_spearman)
             self.val_pearson_best.update(epoch_pearson)
-            self.val_r2_best.update(epoch_r2)
             self.log("test/full_spearman_best", self.val_spearman_best.compute(), on_epoch=True, prog_bar=True)
             self.log("test/full_pearson_best", self.val_pearson_best.compute(), on_epoch=True, prog_bar=True)
-            self.log("test/full_r2_best", self.val_r2_best.compute(), on_epoch=True, prog_bar=True)
             
         # reset val metrics
         self.val_spearman.reset()
         self.val_pearson.reset()
-        self.val_r2.reset()
         
     def test_step(self, batch, batch_idx):
         loss, preds, targets = self.step(batch)
         self.test_spearman.update(preds, targets)
         self.test_pearson.update(preds, targets)
-        self.test_r2.update(preds, targets)
         metrics = {"test/loss": loss}
         self.log_dict(metrics, on_step=False, on_epoch=True, prog_bar=True)
         
@@ -145,10 +128,9 @@ class MainNet(LightningModule):
         # get val metric from current epoch
         epoch_spearman = self.test_spearman.compute()
         epoch_pearson = self.test_pearson.compute()
-        epoch_r2 = self.test_r2.compute()
         
         # log epoch metrics
-        metrics = {"test/spearman": epoch_spearman, "test/pearson": epoch_pearson, "test/r2": epoch_r2}
+        metrics = {"test/spearman": epoch_spearman, "test/pearson": epoch_pearson}
         self.log_dict(metrics, on_epoch=True, prog_bar=True)
         
         
