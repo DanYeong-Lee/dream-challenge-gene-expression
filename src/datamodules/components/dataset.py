@@ -148,7 +148,7 @@ class ShiftDataset(Dataset):
         _, seq, target = self.records[idx]
         ls_seq = "C" + seq[:-1]
         rs_seq = seq[1:] + "T"
-        fwd_tensors = [ls_seq, seq, rs_seq]
+        fwd_tensors = [seq2mat(ls_seq), seq2mat(seq), seq2mat(rs_seq)]
         rev_tensors = [self.reverse_complement(fwd_tensor) for fwd_tensor in fwd_tensors]
         tensors = fwd_tensors + rev_tensors
         y = torch.tensor(float(target), dtype=torch.float32)
