@@ -140,22 +140,15 @@ class ShiftDataset(Dataset):
         rev_tensor = temp.index_select(dim=1, index=torch.LongTensor([1, 0, 3, 2]))
         
         return rev_tensor
-    
-    def random_shift(self, seq):
-        long_seq = "AAC" + seq + "TCT"
-        random_idx = np.random.choice([0, 1, 2, 4, 5, 6], size=3, replace=False)
-        shifted_seqs = [long_seq[i:] for i in random_idx]
-        shifted_seqs.append(seq)
-        
-        return shifted_seqs
         
     def __len__(self):
         return len(self.records)
     
     def __getitem__(self, idx):
         _, seq, target = self.records[idx]
-        shifted_seqs = self.random_shift(seq)
-        fwd_tensors = [self.seq2mat(fwd_seq) for fwd_seq in shifted_seqs]
+        ls_seq = "C" + seq[:-1]
+        rs_seq = seq[1:] + "T"
+        fwd_tensors = [ls_seq, seq, rs_seq]
         rev_tensors = [self.reverse_complement(fwd_tensor) for fwd_tensor in fwd_tensors]
         tensors = fwd_tensors + rev_tensors
         y = torch.tensor(float(target), dtype=torch.float32)
