@@ -5,8 +5,8 @@
 
 defaults:
   - override /datamodule: default.yaml
-  - override /model: DeepFamQ.yaml
-  - override /callbacks: swa.yaml
+  - override /model: GRUMLP.yaml
+  - override /callbacks: no_es.yaml
   #- override /logger: mywandb.yaml
   - override /trainer: default.yaml
 
@@ -19,15 +19,9 @@ logger:
     tags: []
 
 
-callbacks:
-  stochastic_weight_averaging:
-    swa_epoch_start: 12
-    swa_lrs: 5e-4
-    annealing_epochs: 1
-
 trainer:
   min_epochs: 1
-  max_epochs: 25
+  max_epochs: 12
   gpus: [1]
 
 model:
@@ -36,18 +30,14 @@ model:
   weight_decay: 0.01
   max_epochs: 12
   net:
-    _target_: src.models.components.deepfamq.DeepFamQ
-    conv_out_dim: 320
-    conv_kernel_size: [9, 15]
-    pool_size: 5
-    lstm_hidden_dim: 320
-    fc_hidden_dim: 64
-    dropout1: 0.2
-    dropout2: 0.5
+    _target_: src.models.components.rnnmlp.GRUMLP
+    rnn_hidden_dim: 320
+    fc_hidden_dim: 256
+    dropout: 0.5
 
 
 fold: 0
 
-name: "deepfamq-pool5-ss"
+name: "grumlp"
 
 seed: 42
