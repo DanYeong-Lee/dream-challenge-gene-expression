@@ -16,7 +16,7 @@ class DropPosition(nn.Module):
             return x
         # x: (N, C, L)
         n, c, l = x.size()
-        mask = torch.bernoulli(1 - (torch.ones(n, 1, l) * self.p))
+        mask = torch.bernoulli(1 - (torch.ones(n, 1, l) * self.p)).to(x.device)
         return x * mask
 
     
