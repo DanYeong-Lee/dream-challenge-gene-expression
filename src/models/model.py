@@ -155,6 +155,9 @@ class MainNet(LightningModule):
             json.dump(PRED_DATA, f)
 
         print("Saved submission file!")
+        
+    def on_fit_end(self):
+        self.trainer.save_checkpoint("last-swa.ckpt")
     
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), 

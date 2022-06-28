@@ -37,7 +37,7 @@ callbacks:
 
 trainer:
   min_epochs: 1
-  max_epochs: 25
+  max_epochs: 20
   gpus: [1]
 
 model:
