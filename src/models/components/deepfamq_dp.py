@@ -108,7 +108,8 @@ class DeepFamQ_LSTMDP(nn.Module):
         x = self.dp(x)  # (N, C, L)
         x = self.fc(x)
         x = x.squeeze()
-    
+        
+        return x
     
 class DeepFamQ_DP(nn.Module):
     def __init__(
