@@ -23,10 +23,13 @@ trainer:
   max_epochs: 12
   gpus: [1]
 
+datamodule:
+  batch_size: 512
+
 model:
-  _target_: src.models.model.ConjoinedNet_AW_CA
-  lr: 1e-3
-  weight_decay: 0.01
+  _target_: src.models.model.MainNet_AW_CA
+  lr: 0.0015
+  weight_decay: 0.025
   max_epochs: 12
   net:
     _target_: src.models.components.deepfamq.DeepFamQ
@@ -41,6 +44,6 @@ model:
 
 fold: 0
 
-name: "deepfamq-pool1"
+name: "deepfamq-pool1-ss-bsz512-lr0.0015-wd0.025"
 
 seed: 42
