@@ -1,0 +1,15 @@
+_target_: src.models.lossmixup.LossMixupNet
+fc_hidden_dim: 64
+lr: 1e-3
+weight_decay: 0
+alpha: 1.0
+encoder:
+  _target_: src.models.components.deepfamq_mixup.DeepFamQ_Encoder
+  conv_out_dim: 320
+  conv_kernel_size: [10, 15]
+  pool_size: 3
+  lstm_hidden_dim: 320
+  fc_hidden_dim: 64
+  dropout1: 0.2
+  dropout2: 0.5
+  

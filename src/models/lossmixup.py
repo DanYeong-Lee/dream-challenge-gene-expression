@@ -11,7 +11,7 @@ from torchmetrics import MaxMetric, PearsonCorrCoef, SpearmanCorrCoef
 from cosine_annealing_warmup import CosineAnnealingWarmupRestarts
 
 
-class MixupNet(LightningModule):
+class LossMixupNet(LightningModule):
     """Main default network"""
     """Use only forward strand"""
     def __init__(
@@ -83,11 +83,14 @@ class MixupNet(LightningModule):
             fwd_h = layer(fwd_h)
         
         preds = fwd_h.squeeze(-1)
-        y = (lamb * y1) + ((1 - lamb) * y2)
         
-        loss = self.criterion(preds, y)
+        loss1 = self.criterion(preds, y1)
+        loss2 = self.criterion(preds, y2)
         
-        return loss, preds, y
+        loss = (lamb * loss1) + ((1 - lamb) * loss2)
+        
+        return loss, preds, y1
+    
         
     def infer_step(self, batch):
         fwd_x, rev_x, y = batch
@@ -190,7 +193,7 @@ class MixupNet(LightningModule):
                                 weight_decay=self.hparams.weight_decay)
 
 
-class MixupNet_CA(MixupNet):
+class LossMixupNet_CA(LossMixupNet):
     def __init__(
         self,
         encoder: nn.Module,
@@ -222,7 +225,7 @@ class MixupNet_CA(MixupNet):
         return [optimizer], [{"scheduler": scheduler, "interval": "step"}]
     
     
-class MixupNet_AW_CA(MixupNet):
+class LossMixupNet_AW_CA(LossMixupNet):
     def __init__(
         self,
         encoder: nn.Module,
