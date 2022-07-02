@@ -75,8 +75,8 @@ class MixupNet(LightningModule):
         fwd_h2 = self.encoder(fwd_x2)
         
         for layer in self.fc[:k]:
-            h1 = layer(fwd_h1)
-            h2 = layer(fwd_h2)
+            fwd_h1 = layer(fwd_h1)
+            fwd_h2 = layer(fwd_h2)
             
         fwd_h = (lamb * fwd_h1) + ((1 - lamb) * fwd_h2)
         for layer in self.fc[k:]:
