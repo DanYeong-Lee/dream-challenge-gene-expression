@@ -107,7 +107,7 @@ class MyDataModule(LightningDataModule):
             drop_last=False,
             pin_memory=True
         )
-    
+
 
 class MyDataModule_v2(LightningDataModule):
     def __init__(
