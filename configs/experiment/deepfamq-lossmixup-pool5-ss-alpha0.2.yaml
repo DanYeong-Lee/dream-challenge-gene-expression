@@ -41,7 +41,7 @@ model:
   fc_hidden_dim: 64
   lr: 1e-3
   weight_decay: 0.01
-  alpha: 0.5
+  alpha: 0.2
   max_epochs: 12
   encoder:
     _target_: src.models.components.deepfamq_mixup.DeepFamQ_Encoder
@@ -56,6 +56,6 @@ model:
 
 fold: 0
 
-name: "deepfamq-lossmixup-pool5-ss-alpha0.5"
+name: "deepfamq-lossmixup-pool5-ss-alpha0.2"
 
 seed: 42

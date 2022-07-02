@@ -5,7 +5,7 @@
 
 defaults:
   - override /datamodule: default.yaml
-  - override /model: DeepFamQ_lossmixup.yaml
+  - override /model: DeepFamQ_mixup.yaml
   - override /callbacks: no_es.yaml
   #- override /logger: mywandb.yaml
   - override /trainer: default.yaml
@@ -37,11 +37,11 @@ trainer:
   gpus: [1]
 
 model:
-  _target_: src.models.lossmixup.LossMixupNet_AW_CA
+  _target_: src.models.mixup.MixupNet_AW_CA
   fc_hidden_dim: 64
   lr: 1e-3
   weight_decay: 0.01
-  alpha: 0.5
+  alpha: 0.2
   max_epochs: 12
   encoder:
     _target_: src.models.components.deepfamq_mixup.DeepFamQ_Encoder
@@ -56,6 +56,6 @@ model:
 
 fold: 0
 
-name: "deepfamq-lossmixup-pool5-ss-alpha0.5"
+name: "deepfamq-mixup-pool5-ss-alpha0.2"
 
 seed: 42
