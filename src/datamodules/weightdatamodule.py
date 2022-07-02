@@ -47,9 +47,6 @@ class WeightDataModule(LightningDataModule):
         
         if stage == "test" or stage == None:
             test_df = pd.read_csv(self.hparams.test_dir, sep="\t", names=["seq", "target"])
-            if self.hparams.normalize:
-                test_df["target"] = (test_df.target - 11) / 2
-                
             self.test_data = self.dataset(test_df)
             
         if stage == "predict" or stage == None:
