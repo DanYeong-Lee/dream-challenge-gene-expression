@@ -28,11 +28,9 @@ class MainNet(LightningModule):
         
         self.criterion = nn.MSELoss()
         
-        self.train_pearson = PearsonCorrCoef()
         self.val_pearson = PearsonCorrCoef()
         self.test_pearson = PearsonCorrCoef()
         
-        self.train_spearman = SpearmanCorrCoef()
         self.val_spearman = SpearmanCorrCoef()
         self.test_spearman = SpearmanCorrCoef()
         
@@ -58,25 +56,10 @@ class MainNet(LightningModule):
     
     def training_step(self, batch, batch_idx):
         loss, preds, targets = self.step(batch)
-        batch_spearman = self.train_spearman(preds, targets)
-        batch_pearson = self.train_pearson(preds, targets)
         metrics = {"train/loss_batch": loss}
         self.log_dict(metrics, on_step=False, on_epoch=True, prog_bar=True)
         
         return loss
-    
-    def training_epoch_end(self, outputs):
-        # get metric from current epoch
-        epoch_spearman = self.train_spearman.compute()
-        epoch_pearson = self.train_pearson.compute()
-        
-        # log epoch metrics
-        metrics = {"train/spearman": epoch_spearman, "train/pearson": epoch_pearson}
-        self.log_dict(metrics, on_step=False, on_epoch=True, prog_bar=True)
-        
-        # reset metrics
-        self.train_spearman.reset()
-        self.train_pearson.reset()
         
     def validation_step(self, batch, batch_idx):
         loss, preds, targets = self.step(batch)
