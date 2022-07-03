@@ -4,8 +4,8 @@
 # python train.py experiment=example
 
 defaults:
-  - override /datamodule: uniform.yaml
-  - override /model: DeepFamQ.yaml
+  - override /datamodule: default.yaml
+  - override /model: DeepFamQ_DP.yaml
   - override /callbacks: no_es.yaml
   #- override /logger: mywandb.yaml
   - override /trainer: default.yaml
@@ -42,7 +42,7 @@ model:
   weight_decay: 0.01
   max_epochs: 12
   net:
-    _target_: src.models.components.deepfamq.DeepFamQ
+    _target_: src.models.components.deepfamq_dp.DeepFamQ_multilayerLSTMDP
     conv_out_dim: 320
     conv_kernel_size: [9, 15]
     pool_size: 5
@@ -54,6 +54,6 @@ model:
 
 fold: 0
 
-name: "deepfamq-pool5-ss-flat"
+name: "deepfamq_multilayerlstmdp-pool5-ss"
 
 seed: 42

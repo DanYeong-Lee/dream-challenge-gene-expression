@@ -4,7 +4,7 @@
 # python train.py experiment=example
 
 defaults:
-  - override /datamodule: uniform.yaml
+  - override /datamodule: default.yaml
   - override /model: DeepFamQ.yaml
   - override /callbacks: no_es.yaml
   #- override /logger: mywandb.yaml
@@ -18,19 +18,6 @@ logger:
     entity: "danyeong-lee"
     tags: []
 
-callbacks:
-  model_checkpoint:
-    _target_: pytorch_lightning.callbacks.ModelCheckpoint
-    monitor: "val/pearson" # name of the logged metric which determines when model is improving
-    mode: "max" # "max" means higher metric value is better, can be also "min"
-    save_top_k: 1 # save k best models (determined by above metric)
-    save_last: True
-    verbose: False
-    dirpath: "checkpoints"
-    filename: "best"
-    auto_insert_metric_name: False
-
-
 trainer:
   min_epochs: 1
   max_epochs: 12
@@ -42,10 +29,10 @@ model:
   weight_decay: 0.01
   max_epochs: 12
   net:
-    _target_: src.models.components.deepfamq.DeepFamQ
+    _target_: src.models.components.deepfamq.DeepFamQ_multilayerConv
     conv_out_dim: 320
     conv_kernel_size: [9, 15]
-    pool_size: 5
+    pool_size: 1
     lstm_hidden_dim: 320
     fc_hidden_dim: 64
     dropout1: 0.2
@@ -54,6 +41,6 @@ model:
 
 fold: 0
 
-name: "deepfamq-pool5-ss-flat"
+name: "deepfamq-pool1-ss-conv2"
 
 seed: 42
