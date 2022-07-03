@@ -120,8 +120,9 @@ class DeepFamQ_multilayerLSTMDP(nn.Module):
         pool_size: int = 3,
         lstm_hidden_dim: int = 320,
         fc_hidden_dim: int = 64,
-        dropout1: float = 0.1,
-        dropout2: float = 0.1
+        dropout1: float = 0.2,
+        dropout2: float = 0.3,
+        dropout3: float = 0.5
     ):
         super().__init__()
         pool_out_len = int(1 + ((110 - pool_size) / pool_size))
@@ -135,7 +136,7 @@ class DeepFamQ_multilayerLSTMDP(nn.Module):
         
         self.fc = nn.Sequential(
             nn.Flatten(),
-            nn.Dropout(dropout2),
+            nn.Dropout(dropout3),
             nn.Linear(fc_input_dim, fc_hidden_dim),
             nn.ReLU(),
             nn.Linear(fc_hidden_dim, fc_hidden_dim),
