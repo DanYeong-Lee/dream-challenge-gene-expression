@@ -95,7 +95,7 @@ class DeepFamQ_CRRC(nn.Module):
     ):
         super().__init__()
         pool_out_len = int(1 + ((110 - pool_size) / pool_size))
-        fc_input_dim = lstm_hidden_dim * 2 * pool_out_len
+        fc_input_dim = lstm_hidden_dim * 2 * pool_out_len // 2
         
         conv_each_dim = int(conv_out_dim / len(conv_kernel_size))
         self.conv_blocks1 = nn.ModuleList([ConvBlock(4, conv_each_dim, k, pool_size, dropout1) for k in conv_kernel_size])
