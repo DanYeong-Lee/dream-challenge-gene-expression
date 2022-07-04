@@ -20,7 +20,7 @@ logger:
 
 trainer:
   min_epochs: 1
-  max_epochs: 9
+  max_epochs: 12
   gpus: [1]
 
 datamodule:
