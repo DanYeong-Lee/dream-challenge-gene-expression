@@ -96,8 +96,8 @@ class DeepFamQ_CRRC(nn.Module):
         super().__init__()
         pool_out_len = int(1 + ((110 - pool_size) / pool_size))
         fc_input_dim = lstm_hidden_dim * 2 * pool_out_len
-        conv_each_dim = int(conv_out_dim / len(conv_kernel_size))
         
+        conv_each_dim = int(conv_out_dim / len(conv_kernel_size))
         self.conv_blocks1 = nn.ModuleList([ConvBlock(4, conv_each_dim, k, pool_size, dropout1) for k in conv_kernel_size])
         
         self.lstm = nn.LSTM(input_size=conv_out_dim, 
@@ -106,6 +106,7 @@ class DeepFamQ_CRRC(nn.Module):
                             num_layers=lstm_layers, 
                             dropout=dropout2)
         
+        conv_each_dim = int(lstm_hidden_dim / len(conv_kernel_size))
         self.conv_blocks2 = nn.ModuleList([ConvBlock(lstm_hidden_dim * 2, conv_each_dim, k, pool_size, dropout1) for k in conv_kernel_size])
         
         self.fc = nn.Sequential(
@@ -125,13 +126,16 @@ class DeepFamQ_CRRC(nn.Module):
         for conv in self.conv_blocks1:
             conv_outs.append(conv(x))
         x = torch.cat(conv_outs, dim=1)  # (N, C, L)
+        
         x = x.permute(2, 0, 1)  # (L, N, C)
         x, (h, c) = self.lstm(x)  # (L, N, C)
         x = x.permute(1, 2, 0)  # (N, C, L)
+        
         conv_outs = []
         for conv in self.conv_blocks2:
             conv_outs.append(conv(x))
         x = torch.cat(conv_outs, dim=1)  # (N, C, L)
+        
         x = self.fc(x)
         x = x.squeeze()
         
