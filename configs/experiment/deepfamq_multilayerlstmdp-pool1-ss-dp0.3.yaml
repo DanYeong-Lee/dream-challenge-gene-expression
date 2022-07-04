@@ -55,6 +55,6 @@ model:
 
 fold: 0
 
-name: "deepfamq_multilayerlstmdp-pool1-ss"
+name: "deepfamq_multilayerlstmdp-pool1-ss-dp0.3"
 
 seed: 42
