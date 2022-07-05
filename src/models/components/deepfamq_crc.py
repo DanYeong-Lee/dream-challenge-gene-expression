@@ -69,9 +69,11 @@ class DeepFamQ_CRC(nn.Module):
         for conv in self.conv_blocks1:
             conv_outs.append(conv(x))
         x = torch.cat(conv_outs, dim=1)  # (N, C, L)
+        
         x = x.permute(2, 0, 1)  # (L, N, C)
         x, (h, c) = self.lstm(x)  # (L, N, C)
         x = x.permute(1, 2, 0)  # (N, C, L)
+        
         conv_outs = []
         for conv in self.conv_blocks2:
             conv_outs.append(conv(x))

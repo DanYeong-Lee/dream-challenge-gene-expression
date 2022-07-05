@@ -29,4 +29,4 @@ name: "default"
 fold: 0
 
 # passing checkpoint path is necessary
-ckpt_path: logs/experiments/runs/${name}/fold${fold}/checkpoints/best.ckpt
+ckpt_path: logs/experiments/runs/${name}/fold${fold}/checkpoints/last.ckpt
