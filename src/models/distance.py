@@ -11,7 +11,7 @@ from torchmetrics import MaxMetric, PearsonCorrCoef, SpearmanCorrCoef
 from cosine_annealing_warmup import CosineAnnealingWarmupRestarts
 
 
-class LossMixupNet(LightningModule):
+class DistanceNet(LightningModule):
     """Main default network"""
     """Use only forward strand"""
     def __init__(
@@ -19,10 +19,7 @@ class LossMixupNet(LightningModule):
         encoder: nn.Module,
         fc_hidden_dim: int = 64,
         lr: float = 1e-3,
-        weight_decay: float = 1e-5,
-        alpha: float = 1.0,
-        max_epochs: int = 12,
-        eta_min: float = 0.0
+        weight_decay: float = 1e-5
     ):
         super().__init__()
         self.save_hyperparameters(ignore=["encoder"])
@@ -41,6 +38,8 @@ class LossMixupNet(LightningModule):
         self.fc = nn.ModuleList([fc1, fc2])
         
         self.criterion = nn.MSELoss()
+        
+        self.dist = nn.CosineSimilarity()
         
         self.val_pearson = PearsonCorrCoef()
         self.test_pearson = PearsonCorrCoef()
@@ -65,30 +64,28 @@ class LossMixupNet(LightningModule):
         self.val_pearson_best.reset()
     
     def mixup_step(self, batch):
-        fwd_x1, rev_x1, y1 = batch
-        lamb = np.random.beta(self.hparams.alpha, self.hparams.alpha)
+        fwd_x, rev_x, y = batch
         
-        k = np.random.choice(range(len(self.fc)))
-        fwd_h1 = self.encoder(fwd_x1)
+        fwd_h1 = self.encoder(fwd_x)
+        rand_idx = torch.randperm(fwd_h1.size(0))
+        
+        fwd_h2 = fwd_h1[rand_idx]
+        y2 = y[rand_idx]
+        
+        y_diff = torch.abs(y - y2)
+        emb_dist = self.dist(fwd_h1, fwd_h2)
+        
+        corr_loss = -torch.corrcoef(torch.cat([emb_dist.unsqueeze(0), y_diff.unsqueeze(0)], dim=0))[0][1]
+        
         
         for layer in self.fc[:k]:
-            fwd_h1 = layer(fwd_h1)
+            fwd_out = layer(fwd_h1)
         
-        rand_idx = torch.randperm(fwd_h1.size(0))
-        fwd_h = lamb * fwd_h1 + (1 - lamb) * fwd_h1[rand_idx]
+        preds = fwd_out.squeeze(-1)
+        loss = self.criterion(preds, y)
+        loss = loss + corr_loss
         
-        for layer in self.fc[k:]:
-            fwd_h = layer(fwd_h)
-        
-        preds = fwd_h.squeeze(-1)
-        
-        loss1 = self.criterion(preds, y1)
-        loss2 = self.criterion(preds, y1[rand_idx])
-        
-        loss = (lamb * loss1) + ((1 - lamb) * loss2)
-        
-        return loss, preds, y1
-    
+        return loss, preds, y
         
     def infer_step(self, batch):
         fwd_x, rev_x, y = batch
@@ -186,6 +183,57 @@ class LossMixupNet(LightningModule):
         self.trainer.save_checkpoint("last-swa.ckpt")
     
     def configure_optimizers(self):
+        return torch.optim.Adam(self.parameters(), 
+                                lr=self.hparams.lr, 
+                                weight_decay=self.hparams.weight_decay)
+
+
+class DistanceNet_CA(MixupNet):
+    def __init__(
+        self,
+        encoder: nn.Module,
+        fc_hidden_dim: int = 64,
+        lr: float = 1e-4,
+        weight_decay: float = 0,
+        max_epochs: int = 20,
+        eta_min: float = 0.0
+    ):
+        super().__init__(encoder, fc_hidden_dim, lr, weight_decay)
+        self.max_epochs = max_epochs
+        self.eta_min = eta_min
+    
+    def configure_optimizers(self):
+        n_steps = len(self.trainer._data_connector._train_dataloader_source.dataloader())
+        
+        optimizer = torch.optim.Adam(
+            self.parameters(), 
+            lr=self.hparams.lr, 
+            weight_decay=self.hparams.weight_decay
+        )
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer,
+            T_max=self.max_epochs * n_steps,
+            eta_min=self.eta_min
+        )
+        
+        return [optimizer], [{"scheduler": scheduler, "interval": "step"}]
+    
+    
+class DistanceNet_AW_CA(MixupNet):
+    def __init__(
+        self,
+        encoder: nn.Module,
+        fc_hidden_dim: int = 64,
+        lr: float = 1e-4,
+        weight_decay: float = 0,
+        max_epochs: int = 20,
+        eta_min: float = 0.0
+    ):
+        super().__init__(encoder, fc_hidden_dim, lr, weight_decay)
+        self.max_epochs = max_epochs
+        self.eta_min = eta_min
+    
+    def configure_optimizers(self):
         n_steps = len(self.trainer._data_connector._train_dataloader_source.dataloader())
         
         optimizer = torch.optim.AdamW(
@@ -195,59 +243,10 @@ class LossMixupNet(LightningModule):
         )
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
             optimizer,
-            T_max=self.hparams.max_epochs * n_steps,
-            eta_min=self.hparams.eta_min
+            T_max=self.max_epochs * n_steps,
+            eta_min=self.eta_min
         )
         
         return [optimizer], [{"scheduler": scheduler, "interval": "step"}]
-
-
-class LossMixupNetwithWarmup(LossMixupNet):
-    def __init__(
-        self,
-        encoder: nn.Module,
-        fc_hidden_dim: int = 64,
-        lr: float = 1e-3,
-        weight_decay: float = 1e-5,
-        alpha: float = 1.0,
-        max_epochs: int = 12,
-        eta_min: float = 0.0,
-        warmup_steps: int = 3
-    ):
-        super().__init__(encoder, fc_hidden_dim, lr, weight_decay, alpha, max_epochs, eta_min)
-        self.warmup_steps = warmup_steps
-        
-    def training_step(self, batch, batch_idx):
-        if self.current_epoch > self.warmup_steps:
-            loss, preds, targets = self.mixup_step(batch)
-        else:
-            loss, preds, targets = self.infer_step(batch)
-            
-        metrics = {"train/loss_batch": loss}
-        self.log_dict(metrics, on_step=False, on_epoch=True, prog_bar=True)
-        
-        return loss
     
-
-class LossMixupNetDouble(LossMixupNet):
-    def __init__(
-        self,
-        encoder: nn.Module,
-        fc_hidden_dim: int = 64,
-        lr: float = 1e-3,
-        weight_decay: float = 1e-5,
-        alpha: float = 1.0,
-        max_epochs: int = 12,
-        eta_min: float = 0.0,
-    ):
-        super().__init__(encoder, fc_hidden_dim, lr, weight_decay, alpha, max_epochs, eta_min)
-        
-    def training_step(self, batch, batch_idx):
-        loss1, preds, targets = self.mixup_step(batch)
-        loss2, preds, targets = self.infer_step(batch)
-        loss = (loss1 + loss2) / 2
-        
-        metrics = {"train/loss_batch": loss}
-        self.log_dict(metrics, on_step=False, on_epoch=True, prog_bar=True)
-        
-        return loss
+    

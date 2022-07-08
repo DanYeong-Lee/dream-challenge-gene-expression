@@ -63,22 +63,22 @@ class MixupNet(LightningModule):
         self.val_pearson_best.reset()
     
     def mixup_step(self, batch):
-        fwd_x, rev_x, y = batch
+        fwd_x1, rev_x1, y1 = batch
+        rand_idx = torch.randperm(fwd_x1.size(0))
+        fwd_x2 = fwd_x1.clone()[rand_idx]  # Copy & randomly shuffle
+        y2 = y1.clone()[rand_idx]
         lamb = np.random.beta(self.hparams.alpha, self.hparams.alpha)
         
-        k = np.random.choice(range(len(self.fc)))
-        fwd_h1 = self.encoder(fwd_x)
-        rand_idx = torch.randperm(fwd_h1.size(0))
-        fwd_h = lamb * fwd_h1 + (1 - lamb) * fwd_h1[rand_idx]
-        y = lamb * y + (1 - lamb) * y[rand_idx]
-        
-        for layer in self.fc[:k]:
-            fwd_h1 = layer(fwd_h)
+        fwd_h1 = self.encoder(fwd_x1)
+        fwd_h2 = self.encoder(fwd_x2)
             
-        for layer in self.fc[k:]:
+        fwd_h = (lamb * fwd_h1) + ((1 - lamb) * fwd_h2)
+        for layer in self.fc:
             fwd_h = layer(fwd_h)
         
         preds = fwd_h.squeeze(-1)
+        y = (lamb * y1) + ((1 - lamb) * y2)
+        
         loss = self.criterion(preds, y)
         
         return loss, preds, y
