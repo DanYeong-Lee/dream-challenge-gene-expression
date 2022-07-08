@@ -2,6 +2,7 @@ _target_: src.models.distance.DistanceNet
 fc_hidden_dim: 64
 lr: 1e-3
 weight_decay: 0
+lamb: 0.1
 encoder:
   _target_: src.models.components.deepfamq_mixup.DeepFamQ_Encoder
   conv_out_dim: 320

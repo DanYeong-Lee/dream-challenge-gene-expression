@@ -41,6 +41,7 @@ model:
   fc_hidden_dim: 64
   lr: 1e-3
   weight_decay: 0.01
+  lamb: 0.1
   max_epochs: 12
   encoder:
     _target_: src.models.components.deepfamq_mixup.DeepFamQ_Encoder

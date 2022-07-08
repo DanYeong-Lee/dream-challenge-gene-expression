@@ -19,7 +19,8 @@ class DistanceNet(LightningModule):
         encoder: nn.Module,
         fc_hidden_dim: int = 64,
         lr: float = 1e-3,
-        weight_decay: float = 1e-5
+        weight_decay: float = 1e-5,
+        lamb: float = 0.1
     ):
         super().__init__()
         self.save_hyperparameters(ignore=["encoder"])
@@ -73,17 +74,18 @@ class DistanceNet(LightningModule):
         y2 = y[rand_idx]
         
         y_diff = torch.abs(y - y2)
+        y_diff = -y_diff
         emb_dist = self.dist(fwd_h1, fwd_h2)
         
         corr_loss = -torch.corrcoef(torch.cat([emb_dist.unsqueeze(0), y_diff.unsqueeze(0)], dim=0))[0][1]
         
         
-        for layer in self.fc[:k]:
-            fwd_out = layer(fwd_h1)
+        for layer in self.fc:
+            fwd_h1 = layer(fwd_h1)
         
-        preds = fwd_out.squeeze(-1)
+        preds = fwd_h1.squeeze(-1)
         loss = self.criterion(preds, y)
-        loss = loss + corr_loss
+        loss = loss + corr_loss * self.hparams.lamb
         
         return loss, preds, y
         
@@ -188,17 +190,18 @@ class DistanceNet(LightningModule):
                                 weight_decay=self.hparams.weight_decay)
 
 
-class DistanceNet_CA(MixupNet):
+class DistanceNet_CA(DistanceNet):
     def __init__(
         self,
         encoder: nn.Module,
         fc_hidden_dim: int = 64,
         lr: float = 1e-4,
         weight_decay: float = 0,
+        lamb: float = 0.1,
         max_epochs: int = 20,
         eta_min: float = 0.0
     ):
-        super().__init__(encoder, fc_hidden_dim, lr, weight_decay)
+        super().__init__(encoder, fc_hidden_dim, lr, weight_decay, lamb)
         self.max_epochs = max_epochs
         self.eta_min = eta_min
     
@@ -219,17 +222,18 @@ class DistanceNet_CA(MixupNet):
         return [optimizer], [{"scheduler": scheduler, "interval": "step"}]
     
     
-class DistanceNet_AW_CA(MixupNet):
+class DistanceNet_AW_CA(DistanceNet):
     def __init__(
         self,
         encoder: nn.Module,
         fc_hidden_dim: int = 64,
         lr: float = 1e-4,
         weight_decay: float = 0,
+        lamb: float = 0.1,
         max_epochs: int = 20,
         eta_min: float = 0.0
     ):
-        super().__init__(encoder, fc_hidden_dim, lr, weight_decay)
+        super().__init__(encoder, fc_hidden_dim, lr, weight_decay, lamb)
         self.max_epochs = max_epochs
         self.eta_min = eta_min
     
