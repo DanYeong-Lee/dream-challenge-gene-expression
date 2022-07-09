@@ -44,8 +44,8 @@ class DistanceNet(LightningModule):
         
     def forward(self, fwd_x):
         h = self.encoder(fwd_x)
-        for layer in self.fc:
-            h = layer(h)
+        h = self.mlp(h)
+        
         return h.squeeze(-1)
     
     def on_train_start(self):
