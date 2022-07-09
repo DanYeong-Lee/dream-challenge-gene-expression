@@ -31,9 +31,6 @@ callbacks:
     auto_insert_metric_name: False
 
 
-datamodule:
-  batch_size: 1024
-
 trainer:
   min_epochs: 1
   max_epochs: 12
@@ -41,30 +38,28 @@ trainer:
 
 model:
   _target_: src.models.distance.DistanceNet_AW_CA
-  lr: 0.0015
-  weight_decay: 0.025
-  lamb: 0.1
+  lr: 1e-3
+  weight_decay: 0.01
+  lamb: 0.2
   max_epochs: 12
   encoder:
     _target_: src.models.components.deepfamq_encoder.DeepFamQ_Encoder
-    conv_out_dim: 512
+    conv_out_dim: 320
     conv_kernel_size: [9, 15]
     pool_size: 5
     lstm_hidden_dim: 320
-    embed_dim: ${embedding_dim}
-    dropout1: 0.32
-    dropout2: 0.5
+    embed_dim: 320
+    dropout: 0.2
   mlp:
     _target_: src.models.components.deepfamq_encoder.MLP
-    input_dim: ${embedding_dim}
+    input_dim: 320
     hidden_dim: 128
     n_layers: 2
     dropout: 0.5
-    
-embedding_dim: 320
+
 
 fold: 0
 
-name: "deepfamq-dist-pool5-ss"
+name: "deepfamq-dist-fixed-pool5-ss-lambda0.2-nlayer2"
 
 seed: 42

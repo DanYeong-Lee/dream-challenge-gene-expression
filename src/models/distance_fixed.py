@@ -10,6 +10,7 @@ from pytorch_lightning import LightningModule
 from torchmetrics import MaxMetric, PearsonCorrCoef, SpearmanCorrCoef
 from cosine_annealing_warmup import CosineAnnealingWarmupRestarts
 
+
 class DistanceNet(LightningModule):
     """Main default network"""
     """Use only forward strand"""
@@ -28,8 +29,6 @@ class DistanceNet(LightningModule):
         self.mlp = mlp
         
         self.criterion = nn.MSELoss()
-        
-        self.dist = nn.CosineSimilarity()
         
         self.val_pearson = PearsonCorrCoef()
         self.test_pearson = PearsonCorrCoef()
@@ -57,12 +56,10 @@ class DistanceNet(LightningModule):
         fwd_x, rev_x, y = batch
         
         fwd_h1 = self.encoder(fwd_x)
-        rand_idx = torch.randperm(fwd_h1.size(0))
         
-        fwd_h2 = fwd_h1[rand_idx]
         y2 = y[rand_idx]
         
-        y_diff = torch.square(y - y2)
+        y_diff = torch.abs(y - y2)
         y_diff = -y_diff
         emb_dist = self.dist(fwd_h1, fwd_h2)
         

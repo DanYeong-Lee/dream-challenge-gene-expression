@@ -9,7 +9,8 @@ encoder:
   pool_size: 3
   lstm_hidden_dim: 320
   embed_dim: 320
-  dropout: 0.2
+  dropout1: 0.2
+  dropout2: 0.5
 mlp:
   _target_: src.models.components.deepfamq_encoder.MLP
   input_dim: 320
