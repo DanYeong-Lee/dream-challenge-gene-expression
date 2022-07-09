@@ -64,7 +64,7 @@ class DeepFamQ_Encoder(nn.Module):
         
         self.conv_blocks = nn.ModuleList([ConvBlock(4, conv_each_dim, k, pool_size, dropout) for k in conv_kernel_size])
         self.lstm = nn.LSTM(input_size=conv_out_dim, hidden_size=lstm_hidden_dim, bidirectional=True)
-        
+        self.flat = nn.Flatten()
         self.fc = FC_block(fc_input_dim, embed_dim, 0)
         
     def forward(self, x):
@@ -77,6 +77,7 @@ class DeepFamQ_Encoder(nn.Module):
         x = x.permute(2, 0, 1)  # (L, N, C)
         x, (h, c) = self.lstm(x)  # (L, N, C)
         x = x.transpose(0, 1)  # (N, L, C)
+        x = self.flat(x)
         x = self.fc(x)
         
         return x
