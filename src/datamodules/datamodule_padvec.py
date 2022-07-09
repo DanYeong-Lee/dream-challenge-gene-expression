@@ -5,7 +5,7 @@ from sklearn.model_selection import KFold
 import torch
 from torch.utils.data import Dataset, DataLoader
 from pytorch_lightning import LightningDataModule
-from src.datamodules.components.dataset_padvec import OneHotDataset, IndexDataset, ShiftDataset, OneHotDataset_v2
+from src.datamodules.components.dataset_padvec import OneHotDataset, ShiftDataset
 
 
     
