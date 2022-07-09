@@ -85,7 +85,7 @@ class DistanceNet(LightningModule):
         return loss, preds, y
     
     def training_step(self, batch, batch_idx):
-        loss, preds, targets = self.mixup_step(batch)
+        loss, preds, targets = self.distance_step(batch)
         metrics = {"train/loss_batch": loss}
         self.log_dict(metrics, on_step=False, on_epoch=True, prog_bar=True)
         
