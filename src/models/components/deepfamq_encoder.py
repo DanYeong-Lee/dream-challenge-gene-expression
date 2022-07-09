@@ -92,7 +92,7 @@ class MLP(nn.Module):
     ):
         super().__init__()
         self.fc1 = FC_block(input_dim, hidden_dim, dropout)
-        self.fc_list = nn.ModuleList([FC_block(hidden_dim, hidden_dim, dropout)] for k in range(len(n_layers - 2)))
+        self.fc_list = nn.ModuleList([FC_block(hidden_dim, hidden_dim, dropout)] for k in range(n_layers - 2))
         self.final = nn.Linear(hidden_dim, 1)
         
     def forward(self, x):
