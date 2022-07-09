@@ -17,26 +17,16 @@ class DistanceNet(LightningModule):
     def __init__(
         self,
         encoder: nn.Module,
-        fc_hidden_dim: int = 64,
+        mlp: nn.Module,
         lr: float = 1e-3,
         weight_decay: float = 1e-5,
         lamb: float = 0.1
     ):
         super().__init__()
-        self.save_hyperparameters(ignore=["encoder"])
+        self.save_hyperparameters(ignore=["encoder", "mlp"])
         
         self.encoder = encoder
-        embed_dim = encoder(torch.zeros(1, 110, 4)).size(1)
-        
-        fc1 = nn.Sequential(
-            nn.Linear(embed_dim, fc_hidden_dim),
-            nn.ReLU()
-        )
-        fc2 = nn.Sequential(
-            nn.Linear(fc_hidden_dim, 1)
-        )
-        
-        self.fc = nn.ModuleList([fc1, fc2])
+        self.mlp = mlp
         
         self.criterion = nn.MSELoss()
         
@@ -64,7 +54,7 @@ class DistanceNet(LightningModule):
         self.val_spearman_best.reset()
         self.val_pearson_best.reset()
     
-    def mixup_step(self, batch):
+    def distance_step(self, batch):
         fwd_x, rev_x, y = batch
         
         fwd_h1 = self.encoder(fwd_x)
@@ -79,11 +69,9 @@ class DistanceNet(LightningModule):
         
         corr_loss = -torch.corrcoef(torch.cat([emb_dist.unsqueeze(0), y_diff.unsqueeze(0)], dim=0))[0][1]
         
+        fwd_out = self.mlp(fwd_h1)
         
-        for layer in self.fc:
-            fwd_h1 = layer(fwd_h1)
-        
-        preds = fwd_h1.squeeze(-1)
+        preds = fwd_out.squeeze(-1)
         loss = self.criterion(preds, y)
         loss = loss + corr_loss * self.hparams.lamb
         
