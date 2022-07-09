@@ -182,14 +182,14 @@ class DistanceNet_CA(DistanceNet):
     def __init__(
         self,
         encoder: nn.Module,
-        fc_hidden_dim: int = 64,
-        lr: float = 1e-4,
-        weight_decay: float = 0,
+        mlp: nn.Module,
+        lr: float = 1e-3,
+        weight_decay: float = 1e-5,
         lamb: float = 0.1,
         max_epochs: int = 20,
         eta_min: float = 0.0
     ):
-        super().__init__(encoder, fc_hidden_dim, lr, weight_decay, lamb)
+        super().__init__(encoder, mlp, lr, weight_decay, lamb)
         self.max_epochs = max_epochs
         self.eta_min = eta_min
     
@@ -214,14 +214,14 @@ class DistanceNet_AW_CA(DistanceNet):
     def __init__(
         self,
         encoder: nn.Module,
-        fc_hidden_dim: int = 64,
+        mlp: nn.Module,
         lr: float = 1e-4,
         weight_decay: float = 0,
         lamb: float = 0.1,
         max_epochs: int = 20,
         eta_min: float = 0.0
     ):
-        super().__init__(encoder, fc_hidden_dim, lr, weight_decay, lamb)
+        super().__init__(encoder, mlp, lr, weight_decay, lamb)
         self.max_epochs = max_epochs
         self.eta_min = eta_min
     
