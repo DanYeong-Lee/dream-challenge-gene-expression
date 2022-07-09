@@ -43,7 +43,7 @@ model:
   lamb: 0.2
   max_epochs: 12
   encoder:
-    _target_: src.models.components.deepfamq_mixup.DeepFamQ_Encoder
+    _target_: src.models.components.deepfamq_encoder.DeepFamQ_Encoder
     conv_out_dim: 320
     conv_kernel_size: [9, 15]
     pool_size: 5
