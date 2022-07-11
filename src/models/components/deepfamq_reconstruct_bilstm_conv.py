@@ -58,7 +58,7 @@ class Encoder(nn.Module):
 class Reconstructor(nn.Module):
     def __init__(
         self,
-        input_dim: int = 640
+        input_dim: int = 640,
         hidden_dim: int = 160,
         conv_kernel_size: int = 9
     ):
