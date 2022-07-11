@@ -66,7 +66,7 @@ class ReconstructNet(LightningModule):
         
         fwd_h = self.encoder(fwd_x)
         recon_x = self.reconstructor(fwd_x, fwd_h)
-        recon_loss = self.reconstruction_loss(recon_x.reshape(-1, 4), fwd_x.reshape(-1, 4))
+        recon_loss = self.reconstruction_loss(recon_x.reshape(-1, 4), rev_x.reshape(-1, 4))
         
         preds = self.mlp(fwd_h)
         loss = self.criterion(preds, y)

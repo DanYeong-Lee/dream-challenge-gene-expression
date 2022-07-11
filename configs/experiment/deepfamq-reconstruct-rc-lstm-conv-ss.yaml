@@ -1,0 +1,51 @@
+# @package _global_
+
+# to execute this experiment run:
+# python train.py experiment=example
+
+defaults:
+  - override /datamodule: default.yaml
+  - override /model: DeepFamQ_reconstruct_lstm_conv.yaml
+  - override /callbacks: no_es.yaml
+  #- override /logger: mywandb.yaml
+  - override /trainer: default.yaml
+
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+logger:
+  wandb:
+    entity: "danyeong-lee"
+    tags: []
+
+trainer:
+  min_epochs: 1
+  max_epochs: 12
+  gpus: [1]
+
+model:
+  _target_: src.models.reconstruct_rc.ReconstructNet_AW_CA
+  lr: 1e-3
+  weight_decay: 0.01
+  lamb: 0.1
+  encoder:
+    _target_: src.models.components.deepfamq_reconstruct_lstm_conv.Encoder
+    conv_out_dim: 320
+    conv_kernel_size: [9, 15]
+    lstm_hidden_dim: 320
+    dropout1: 0.2
+  reconstructor:
+    _target_: src.models.components.deepfamq_reconstruct_lstm_conv.Reconstructor
+    embed_dim: 640
+    conv_kernel_size: 9
+  mlp:
+    _target_: src.models.components.deepfamq_reconstruct_lstm_conv.MLP
+    hidden_dim: 64
+    dropout: 0.5
+
+
+fold: 0
+
+name: "deepfamq-reconstruct-rc-lstm-conv-ss"
+
+seed: 42
