@@ -48,7 +48,7 @@ class DeepFamQ_CRR_Res(nn.Module):
         
         self.conv_blocks = nn.ModuleList([ConvBlock(4, conv_each_dim, k, pool_size, dropout1) for k in conv_kernel_size])
         self.lstm1 = nn.LSTM(input_size=conv_out_dim, hidden_size=lstm_hidden_dim, bidirectional=True)
-        self.do = nn.Dropout(dropou2)
+        self.do = nn.Dropout(dropout2)
         self.lstm2 = nn.LSTM(input_size=lstm_hidden_dim * 2, hidden_size=lstm_hidden_dim, bidirectional=True)
         
         self.fc = nn.Sequential(
