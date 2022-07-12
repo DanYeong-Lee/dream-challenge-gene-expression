@@ -1,0 +1,49 @@
+# @package _global_
+
+# to execute this experiment run:
+# python train.py experiment=example
+
+defaults:
+  - override /datamodule: default.yaml
+  - override /model: DeepFamQ_crc.yaml
+  - override /callbacks: no_es.yaml
+  #- override /logger: mywandb.yaml
+  - override /trainer: default.yaml
+
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+logger:
+  wandb:
+    entity: "danyeong-lee"
+    tags: []
+
+trainer:
+  min_epochs: 1
+  max_epochs: 12
+  gpus: [1]
+
+datamodule:
+  batch_size: 512
+
+model:
+  _target_: src.models.model.ConjoinedNet_AW_CA
+  lr: 0.0015
+  weight_decay: 0.025
+  max_epochs: 12
+  net:
+    _target_: src.models.components.deepfamq_crc_rnn.DeepFamQ_CRC_RNN
+    conv_out_dim: 512
+    conv_kernel_size: [9, 15]
+    pool_size: 1
+    lstm_hidden_dim: 320
+    fc_hidden_dim: 64
+    dropout1: 0.2
+    dropout2: 0.5
+
+
+fold: None
+
+name: "deepfamq-crc-rnn"
+
+seed: 42
