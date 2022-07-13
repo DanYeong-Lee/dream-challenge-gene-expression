@@ -19,7 +19,7 @@ class DropPosition(nn.Module):
         mask = torch.bernoulli(1 - (torch.ones(n, 1, l) * self.p)).to(x.device)
         x = x * mask
         
-        return x / (1 - p)
+        return x / (1 - self.p)
 
 
 class ConvBlock(nn.Module):
