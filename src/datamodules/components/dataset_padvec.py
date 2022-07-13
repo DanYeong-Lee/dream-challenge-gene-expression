@@ -1,7 +1,6 @@
 import numpy as np
 import torch
 from torch.utils.data import Dataset
-from Bio.Seq import Seq
 
 
 class OneHotDataset(Dataset):
@@ -18,7 +17,7 @@ class OneHotDataset(Dataset):
             "N": [0., 0., 0., 0.]
         }
     
-    def seq2mat(self,seq, max_len=110):
+    def seq2mat(self, seq, max_len=110):
         vec = "TCTTAATTAAAAAAAGATAGAAAACATTAGGAGTGTAACACAAGACTTTCGGATCCTGAGCAGGCAAGATAAACG"
         seq = seq + vec
         seq = seq[:max_len]
@@ -74,7 +73,7 @@ class ShiftDataset(Dataset):
     def __getitem__(self, idx):
         _, seq, target = self.records[idx]
         seq = seq + "TCTTAATTAAAAAAAGATAGAAAACATTAGGAGTGTAACACAAGACTTTCGGATCCTGAGCAGGCAAGATAAACG"
-        ls_seq = "C" + seq[:-1] + "TCTTAATTAAAAAAAGATAGAAAACATTAGGAGTGTAACACAAGACTTTCGGATCCTGAGCAGGCAAGATAAACG"
+        ls_seq = "C" + seq + "TCTTAATTAAAAAAAGATAGAAAACATTAGGAGTGTAACACAAGACTTTCGGATCCTGAGCAGGCAAGATAAACG"
         rs_seq = seq[1:] + "TCTTAATTAAAAAAAGATAGAAAACATTAGGAGTGTAACACAAGACTTTCGGATCCTGAGCAGGCAAGATAAACG"
         fwd_tensors = [self.seq2mat(ls_seq), self.seq2mat(seq), self.seq2mat(rs_seq)]
         rev_tensors = [self.reverse_complement(fwd_tensor) for fwd_tensor in fwd_tensors]
