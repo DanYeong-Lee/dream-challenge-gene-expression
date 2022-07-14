@@ -1,4 +1,4 @@
-_target_: src.datamodules.datamodule.MyDataModule
+_target_: src.datamodules.datamodule_kmer.MyDataModule
 
 train_dir: ${oc.env:TRAIN_DATA} # specified in .env
 test_dir: ${oc.env:TEST_DATA}
@@ -6,6 +6,5 @@ predict_dir: ${oc.env:PREDICT_DATA}
 batch_size: 1024
 num_workers: 4
 fold: ${fold}
-shift: True
-one_hot: True
 normalize: True
+k: 2
