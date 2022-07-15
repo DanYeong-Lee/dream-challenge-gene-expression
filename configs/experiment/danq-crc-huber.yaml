@@ -5,8 +5,8 @@
 
 defaults:
   - override /datamodule: default.yaml
-  - override /model: Toy.yaml
-  - override /callbacks: swa.yaml
+  - override /model: DanQ_crc.yaml
+  - override /callbacks: no_es.yaml
   #- override /logger: mywandb.yaml
   - override /trainer: default.yaml
 
@@ -18,30 +18,32 @@ logger:
     entity: "danyeong-lee"
     tags: []
 
-callbacks:
-  stochastic_weight_averaging:
-    swa_epoch_start: 10
-    swa_lrs: 1e-4
-    annealing_epochs: 1
-    annealing_strategy: "cos"
-
 trainer:
   min_epochs: 1
-  max_epochs: 20
+  max_epochs: 12
   gpus: [1]
 
+datamodule:
+  batch_size: 512
+
 model:
-  _target_: src.models.model.MainNet_AW_CA
-  lr: 1e-3
-  weight_decay: 0.1
-  max_epochs: 10
+  _target_: src.models.huber.ConjoinedNet_AW_CA
+  lr: 0.0015
+  weight_decay: 0.025
+  max_epochs: 12
   net:
-    _target_: src.models.components.toy.Toy
-    hidden_dim: 64
+    _target_: src.models.components.danq_crc.DanQ_CRC
+    conv_out_dim: 512
+    conv_kernel_size: 10
+    pool_size: 1
+    lstm_hidden_dim: 320
+    fc_hidden_dim: 64
+    dropout1: 0.2
+    dropout2: 0.5
 
 
 fold: 0
 
-name: "toy-swa"
+name: "danq-crc-huber"
 
 seed: 42
