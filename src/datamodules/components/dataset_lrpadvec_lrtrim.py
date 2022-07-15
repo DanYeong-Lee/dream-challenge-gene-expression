@@ -2,6 +2,7 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 from Bio.Seq import Seq
+import random
 
 
 class OneHotDataset(Dataset):
