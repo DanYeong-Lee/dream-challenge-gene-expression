@@ -37,9 +37,9 @@ model:
     conv_kernel_size: [9, 15]
     pool_size: 1
     lstm_hidden_dim: 320
-    fc_hidden_dim: 64
+    fc_hidden_dim: 512
     dropout1: 0.2
-    dropout2: 0.1
+    dropout2: 0.3
 
 
 fold: 0
