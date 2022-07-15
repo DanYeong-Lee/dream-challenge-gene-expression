@@ -68,6 +68,6 @@ class DanQ_CRC(nn.Module):
         x = x.permute(2, 0, 1)  # (L, N, C)
         x, (h, c) = self.lstm(x)
         x = x.permute(1, 2, 0)  # (N, C, L)
-        x - self.conv_block2(x)
+        x = self.conv_block2(x)
         x = self.fc(x).squeeze(-1)
         return x
