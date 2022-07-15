@@ -39,7 +39,7 @@ class DanQ_CRC(nn.Module):
         dropout2: float = 0.5
     ):
         super().__init__()
-        conv_out_len = 110 - conv_kernel_size + 1
+        conv_out_len = 110
         pool_out_len = int(1 + ((conv_out_len - pool_size) / pool_size))
         fc_input_dim = lstm_hidden_dim * pool_out_len
         
