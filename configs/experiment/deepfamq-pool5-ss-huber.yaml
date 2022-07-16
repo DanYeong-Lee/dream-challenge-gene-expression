@@ -30,6 +30,8 @@ callbacks:
     filename: "best"
     auto_insert_metric_name: False
 
+datamodule:
+  batch_size: 512
 
 trainer:
   min_epochs: 1
