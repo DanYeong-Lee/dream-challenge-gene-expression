@@ -45,6 +45,6 @@ model:
 
 fold: 0
 
-name: "deepfamq-crc-huber-lrpadvec"
+name: "deepfamq-crc-huber-lrpadvec-removeN"
 
 seed: 41
