@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from einops import rearrange
-from einops.layer.torch import Rearrange
+from einops.layers.torch import Rearrange
 
 class ConvBlock(nn.Module):
     def __init__(
