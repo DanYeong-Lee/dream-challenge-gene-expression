@@ -43,6 +43,7 @@ class DeepFamQ_CRC(nn.Module):
     ):
         super().__init__()
         pool_out_len = int(1 + ((110 - pool_size) / pool_size))
+        pool_out_len = int(1 + ((pool_out_len - pool_size) / pool_size))
         fc_input_dim = lstm_hidden_dim * 2 * pool_out_len // 2
         
         conv_each_dim = int(conv_out_dim / len(conv_kernel_size))
