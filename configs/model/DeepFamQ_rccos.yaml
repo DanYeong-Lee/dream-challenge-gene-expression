@@ -1,0 +1,17 @@
+_target_: src.models.rccos.RCCosNet
+lr: 0.0015
+weight_decay: 0.01
+lamb: 0.1
+encoder:
+  _target_: src.models.components.deepfamq_encoder.DeepFamQ_Encoder
+  conv_out_dim: 512
+  conv_kernel_size: [9, 15]
+  pool_size: 3
+  lstm_hidden_dim: 320
+  dropout1: 0.2
+  dropout2: 0.5
+mlp:
+  _target_: src.models.components.deepfamq_encoder.MLP
+  hidden_dim: 64
+
+  

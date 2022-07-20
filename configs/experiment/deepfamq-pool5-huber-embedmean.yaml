@@ -4,8 +4,8 @@
 # python train.py experiment=example
 
 defaults:
-  - override /datamodule: lrpadvec.yaml
-  - override /model: DeepFamQ_crc.yaml
+  - override /datamodule: default.yaml
+  - override /model: DeepFamQ_rccos.yaml
   - override /callbacks: no_es.yaml
   #- override /logger: mywandb.yaml
   - override /trainer: default.yaml
@@ -17,37 +17,34 @@ logger:
   wandb:
     entity: "danyeong-lee"
     tags: []
-    
-callbacks:
-  model_checkpoint:
-    monitor: test/full_pearson
+
 
 trainer:
   min_epochs: 1
   max_epochs: 12
   gpus: [1]
 
-datamodule:
-  batch_size: 512
-
 model:
-  _target_: src.models.huber.ConjoinedNet_AW_CA
+  _target_: src.models.embedmean.EmbedNet
   lr: 0.0015
   weight_decay: 0.01
-  max_epochs: 12
-  net:
-    _target_: src.models.components.deepfamq_crc.DeepFamQ_CRC
+  lamb: 0.1
+  encoder:
+    _target_: src.models.components.deepfamq_encoder_fixed.DeepFamQ_Encoder
     conv_out_dim: 512
     conv_kernel_size: [9, 15]
-    pool_size: 1
+    pool_size: 5
     lstm_hidden_dim: 320
-    fc_hidden_dim: 64
+    embed_dim: 64
     dropout1: 0.2
     dropout2: 0.5
+  mlp:
+    _target_: src.models.components.deepfamq_encoder_fixed.MLP
+    hidden_dim: 64
 
 
-fold: None
+fold: 0
 
-name: "deepfamq-crc-huber-lrpadvec"
+name: "deepfamq-pool5-huber-embedmean"
 
 seed: 42

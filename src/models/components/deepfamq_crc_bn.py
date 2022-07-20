@@ -19,6 +19,7 @@ class ConvBlock(nn.Module):
         super().__init__()
         self.main = nn.Sequential(
             nn.Conv1d(in_channels=input_dim, out_channels=out_dim, kernel_size=kernel_size, padding="same"),
+            nn.BatchNorm1d(out_dim),
             nn.ReLU(),
             nn.MaxPool1d(pool_size),
             nn.Dropout(dropout)

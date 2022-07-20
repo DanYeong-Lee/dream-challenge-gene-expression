@@ -11,7 +11,7 @@ from torchmetrics import MaxMetric, PearsonCorrCoef, SpearmanCorrCoef
 from cosine_annealing_warmup import CosineAnnealingWarmupRestarts
 
 
-class DistanceNet(LightningModule):
+class RCCosNet(LightningModule):
     """Main default network"""
     """Use only forward strand"""
     def __init__(
@@ -27,8 +27,11 @@ class DistanceNet(LightningModule):
         
         self.encoder = encoder
         self.mlp = mlp
+        self._dummy()
         
-        self.criterion = nn.MSELoss()
+        self.criterion = nn.HuberLoss()
+        
+        self.dist = nn.CosineSimilarity()
         
         self.val_pearson = PearsonCorrCoef()
         self.test_pearson = PearsonCorrCoef()
@@ -40,11 +43,18 @@ class DistanceNet(LightningModule):
         self.val_spearman_best = MaxMetric()
         self.val_pearson_best = MaxMetric()
         
-    def forward(self, fwd_x):
-        h = self.encoder(fwd_x)
-        h = self.mlp(h)
+    def _dummy(self):
+        x = torch.randn(1, 110, 4)
+        x = self.encoder(x)
+        self.mlp(x)
         
-        return h.squeeze(-1)
+    def forward(self, fwd_x, rev_x):
+        fwd_h = self.encoder(fwd_x)
+        rev_h = self.encoder(rev_x)
+        fwd_out = self.mlp(fwd_h)
+        rev_out = self.mlp(rev_h)
+        
+        return (fwd_out + rev_out) / 2
     
     def on_train_start(self):
         # by default lightning executes validation step sanity checks before training starts,
@@ -52,36 +62,34 @@ class DistanceNet(LightningModule):
         self.val_spearman_best.reset()
         self.val_pearson_best.reset()
     
-    def distance_step(self, batch):
+    def rc_step(self, batch):
         fwd_x, rev_x, y = batch
         
-        fwd_h1 = self.encoder(fwd_x)
+        fwd_h = self.encoder(fwd_x)
+        rev_h = self.encoder(rev_x)
         
-        y2 = y[rand_idx]
+        h_dist = self.dist(fwd_h, rev_h)
         
-        y_diff = torch.abs(y - y2)
-        y_diff = -y_diff
-        emb_dist = self.dist(fwd_h1, fwd_h2)
+        fwd_out = self.mlp(fwd_h)
+        rev_out = self.mlp(rev_h)
         
-        corr_loss = -torch.corrcoef(torch.cat([emb_dist.unsqueeze(0), y_diff.unsqueeze(0)], dim=0))[0][1]
+        preds = (fwd_out + rev_out) / 2
+        fwd_loss = self.criterion(fwd_out, y)
+        rev_loss = self.criterion(rev_out, y)
         
-        fwd_out = self.mlp(fwd_h1)
-        
-        preds = fwd_out.squeeze(-1)
-        loss = self.criterion(preds, y)
-        loss = loss + corr_loss * self.hparams.lamb
+        loss = (fwd_loss + rev_loss) / 2 - (self.hparams.lamb * h_dist).mean()
         
         return loss, preds, y
         
     def infer_step(self, batch):
         fwd_x, rev_x, y = batch
-        preds = self(fwd_x)
+        preds = self(fwd_x, rev_x)
         loss = self.criterion(preds, y)
         
         return loss, preds, y
     
     def training_step(self, batch, batch_idx):
-        loss, preds, targets = self.distance_step(batch)
+        loss, preds, targets = self.rc_step(batch)
         metrics = {"train/loss_batch": loss}
         self.log_dict(metrics, on_step=False, on_epoch=True, prog_bar=True)
         
@@ -174,7 +182,7 @@ class DistanceNet(LightningModule):
                                 weight_decay=self.hparams.weight_decay)
 
 
-class DistanceNet_CA(DistanceNet):
+class RCCosNet_CA(RCCosNet):
     def __init__(
         self,
         encoder: nn.Module,
@@ -206,7 +214,7 @@ class DistanceNet_CA(DistanceNet):
         return [optimizer], [{"scheduler": scheduler, "interval": "step"}]
     
     
-class DistanceNet_AW_CA(DistanceNet):
+class RCCosNet_AW_CA(RCCosNet):
     def __init__(
         self,
         encoder: nn.Module,

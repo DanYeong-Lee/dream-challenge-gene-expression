@@ -4,7 +4,7 @@
 # python train.py experiment=example
 
 defaults:
-  - override /datamodule: lrpadvec.yaml
+  - override /datamodule: default.yaml
   - override /model: DeepFamQ_crc.yaml
   - override /callbacks: no_es.yaml
   #- override /logger: mywandb.yaml
@@ -17,15 +17,11 @@ logger:
   wandb:
     entity: "danyeong-lee"
     tags: []
-    
-callbacks:
-  model_checkpoint:
-    monitor: test/full_pearson
 
 trainer:
   min_epochs: 1
   max_epochs: 12
-  gpus: [1]
+  gpus: [0]
 
 datamodule:
   batch_size: 512
@@ -33,12 +29,12 @@ datamodule:
 model:
   _target_: src.models.huber.ConjoinedNet_AW_CA
   lr: 0.0015
-  weight_decay: 0.01
+  weight_decay: 0.025
   max_epochs: 12
   net:
     _target_: src.models.components.deepfamq_crc.DeepFamQ_CRC
     conv_out_dim: 512
-    conv_kernel_size: [9, 15]
+    conv_kernel_size: [9, 11]
     pool_size: 1
     lstm_hidden_dim: 320
     fc_hidden_dim: 64
@@ -46,8 +42,8 @@ model:
     dropout2: 0.5
 
 
-fold: None
+fold: 0
 
-name: "deepfamq-crc-huber-lrpadvec"
+name: "deepfamq-crc-huber-kernels9+11"
 
 seed: 42

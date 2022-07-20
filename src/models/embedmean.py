@@ -11,7 +11,7 @@ from torchmetrics import MaxMetric, PearsonCorrCoef, SpearmanCorrCoef
 from cosine_annealing_warmup import CosineAnnealingWarmupRestarts
 
 
-class DistanceNet(LightningModule):
+class EmbedNet(LightningModule):
     """Main default network"""
     """Use only forward strand"""
     def __init__(
@@ -27,10 +27,9 @@ class DistanceNet(LightningModule):
         
         self.encoder = encoder
         self.mlp = mlp
+        self._dummy()
         
-        self.criterion = nn.MSELoss()
-        
-        self.dist = nn.CosineSimilarity()
+        self.criterion = nn.HuberLoss()
         
         self.val_pearson = PearsonCorrCoef()
         self.test_pearson = PearsonCorrCoef()
@@ -42,11 +41,17 @@ class DistanceNet(LightningModule):
         self.val_spearman_best = MaxMetric()
         self.val_pearson_best = MaxMetric()
         
-    def forward(self, fwd_x):
-        h = self.encoder(fwd_x)
-        h = self.mlp(h)
+    def _dummy(self):
+        x = torch.randn(1, 110, 4)
+        x = self.encoder(x)
+        self.mlp(x)
         
-        return h.squeeze(-1)
+    def forward(self, fwd_x, rev_x):
+        fwd_h = self.encoder(fwd_x)
+        rev_h = self.encoder(rev_x)
+        h = (fwd_h + rev_h) / 2
+        
+        return self.mlp(h)
     
     def on_train_start(self):
         # by default lightning executes validation step sanity checks before training starts,
@@ -54,45 +59,23 @@ class DistanceNet(LightningModule):
         self.val_spearman_best.reset()
         self.val_pearson_best.reset()
     
-    def distance_step(self, batch):
+        
+    def step(self, batch):
         fwd_x, rev_x, y = batch
-        
-        fwd_h1 = self.encoder(fwd_x)
-        rand_idx = torch.randperm(fwd_h1.size(0))
-        
-        fwd_h2 = fwd_h1[rand_idx]
-        y2 = y[rand_idx]
-        
-        y_diff = torch.square(y - y2)
-        y_diff = -y_diff
-        emb_dist = self.dist(fwd_h1, fwd_h2)
-        
-        corr_loss = -torch.corrcoef(torch.cat([emb_dist.unsqueeze(0), y_diff.unsqueeze(0)], dim=0))[0][1]
-        
-        fwd_out = self.mlp(fwd_h1)
-        
-        preds = fwd_out.squeeze(-1)
-        loss = self.criterion(preds, y)
-        loss = loss + corr_loss * self.hparams.lamb
-        
-        return loss, preds, y
-        
-    def infer_step(self, batch):
-        fwd_x, rev_x, y = batch
-        preds = self(fwd_x)
+        preds = self(fwd_x, rev_x)
         loss = self.criterion(preds, y)
         
         return loss, preds, y
     
     def training_step(self, batch, batch_idx):
-        loss, preds, targets = self.distance_step(batch)
+        loss, preds, targets = self.step(batch)
         metrics = {"train/loss_batch": loss}
         self.log_dict(metrics, on_step=False, on_epoch=True, prog_bar=True)
         
         return loss
         
     def validation_step(self, batch, batch_idx):
-        loss, preds, targets = self.infer_step(batch)
+        loss, preds, targets = self.step(batch)
         self.val_spearman.update(preds, targets)
         self.val_pearson.update(preds, targets)
         
@@ -131,7 +114,7 @@ class DistanceNet(LightningModule):
         self.val_pearson.reset()
         
     def test_step(self, batch, batch_idx):
-        loss, preds, targets = self.infer_step(batch)
+        loss, preds, targets = self.step(batch)
         self.test_spearman.update(preds, targets)
         self.test_pearson.update(preds, targets)
         metrics = {"test/loss": loss}
@@ -148,7 +131,7 @@ class DistanceNet(LightningModule):
         
         
     def predict_step(self, batch, batch_idx):
-        _, preds, _ = self.infer_step(batch)
+        _, preds, _ = self.step(batch)
         
         return preds
     
@@ -178,7 +161,7 @@ class DistanceNet(LightningModule):
                                 weight_decay=self.hparams.weight_decay)
 
 
-class DistanceNet_CA(DistanceNet):
+class EmbedNet_CA(EmbedNet):
     def __init__(
         self,
         encoder: nn.Module,
@@ -210,7 +193,7 @@ class DistanceNet_CA(DistanceNet):
         return [optimizer], [{"scheduler": scheduler, "interval": "step"}]
     
     
-class DistanceNet_AW_CA(DistanceNet):
+class EmbedNet_AW_CA(EmbedNet):
     def __init__(
         self,
         encoder: nn.Module,
