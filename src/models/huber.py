@@ -146,27 +146,7 @@ class MainNet(LightningModule):
         return torch.optim.Adam(self.parameters(), 
                                 lr=self.hparams.lr, 
                                 weight_decay=self.hparams.weight_decay)
-    
 
-class DSNet(MainNet):
-    def __init__(
-        self,
-        net: nn.Module,
-        lr: float = 1e-3,
-        weight_decay: float = 1e-5,
-        
-    ):
-        super().__init__(net, lr, weight_decay)
-    
-    def forward(self, fwd_x, rev_x):        
-        return self.net(fwd_x, rev_x)
-    
-    def step(self, batch):
-        fwd_x, rev_x, y = batch
-        preds = self(fwd_x, rev_x)
-        loss = self.criterion(preds, y)
-        
-        return loss, preds, y
     
     
 class ConjoinedNet(MainNet):
