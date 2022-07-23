@@ -58,9 +58,6 @@ class ShiftDataset(Dataset):
     def __getitem__(self, i):
         seq, exp = self.records[i].seq, self.records[i].target
 
-        # Target standardization.
-        exp = (exp - 11.0) / 2.0
-
         seqs = []
         shift_range = [i - self.tta // 2 for i in range(self.tta)]
         for shift in shift_range:
@@ -99,9 +96,6 @@ class BaseDataset(Dataset):
     
     def __getitem__(self, i):
         seq, exp = self.records[i].seq, self.records[i].target
-
-        # Target standardization.
-        exp = (exp - 11.0) / 2.0
 
         # Make sure that sequence length is exactly `max_length`.
         vector_left = 'GCTAGCAGGAATGATGCAAAAGGTTCCCGATTCGAAC'
