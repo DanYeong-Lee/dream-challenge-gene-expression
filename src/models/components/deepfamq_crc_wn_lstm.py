@@ -50,7 +50,11 @@ class DeepFamQ_CRC(nn.Module):
         conv_each_dim = int(conv_out_dim / len(conv_kernel_size))
         self.conv_blocks1 = nn.ModuleList([ConvBlock(4, conv_each_dim, k, pool_size, dropout1) for k in conv_kernel_size])
         
-        self.lstm = weight_norm(nn.LSTM(input_size=conv_out_dim, hidden_size=lstm_hidden_dim, bidirectional=True))
+        lstm = nn.LSTM(input_size=conv_out_dim, hidden_size=lstm_hidden_dim, bidirectional=True)
+        lstm = weight_norm(lstm, name="weight_ih_l0")
+        lstm = weight_norm(lstm, name="weight_hh_l0")
+        lstm = weight_norm(lstm, name="weight_ih_l0_reverse")
+        self.lstm = weight_norm(lstm, name="weight_hh_l0_reverse")
         
         conv_each_dim = int(lstm_hidden_dim / len(conv_kernel_size))
         self.conv_blocks2 = nn.ModuleList([ConvBlock(lstm_hidden_dim * 2, conv_each_dim, k, pool_size, dropout1) for k in conv_kernel_size])
