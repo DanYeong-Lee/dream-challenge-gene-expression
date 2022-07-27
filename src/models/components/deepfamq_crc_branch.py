@@ -54,7 +54,17 @@ class DeepFamQ_CRC(nn.Module):
         conv_each_dim = int(lstm_hidden_dim / len(conv_kernel_size))
         self.conv_blocks2 = nn.ModuleList([ConvBlock(lstm_hidden_dim * 2, conv_each_dim, k, pool_size, dropout1) for k in conv_kernel_size])
         
-        self.fc = nn.Sequential(
+        self.fc1 = nn.Sequential(
+            nn.Flatten(),
+            nn.Dropout(dropout2),
+            nn.Linear(fc_input_dim, fc_hidden_dim),
+            nn.ReLU(),
+            nn.Linear(fc_hidden_dim, fc_hidden_dim),
+            nn.ReLU(),
+            nn.Linear(fc_hidden_dim, 1)
+        )
+        
+        self.fc2 = nn.Sequential(
             nn.Flatten(),
             nn.Dropout(dropout2),
             nn.Linear(fc_input_dim, fc_hidden_dim),

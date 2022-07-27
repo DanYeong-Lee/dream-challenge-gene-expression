@@ -123,19 +123,14 @@ class MainNet(LightningModule):
         return preds
     
     def on_predict_epoch_end(self, outputs):
-        with open("../../../../../sample_submission.json", "r") as f:
-            ground = json.load(f)
-    
-        indices = np.array([int(indice) for indice in list(ground.keys())])
-        PRED_DATA = OrderedDict()
-        Y_pred = np.array(torch.cat(outputs[0]))
-
-        for i in indices:
-            PRED_DATA[str(i)] = float(Y_pred[i])
+        data_path = '/data/project/ddp/data/dream/test_sequences.txt'
+        df = pd.read_csv(data_path, sep='\t', names=['sequence', 'measured_expression'])
+        pred = np.array(torch.cat(outputs[0]))
+        df['measured_expression'] = pred
         
-        
-        with open("../../../../../submission.json", "w") as f:
-            json.dump(PRED_DATA, f)
+        prediction_dict = {str(i): float(df.measured_expression.values[i]) for i in range(len(pred))}
+        with open('../../../../../submission.json', 'w') as f:
+            json.dump(prediction_dict, f)
 
         print("Saved submission file!")
         
