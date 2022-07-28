@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from einops import rearrange, repeat
+from einops import rearrange
 
 
 class ConvBlock(nn.Module):
@@ -30,12 +30,12 @@ class ConvBlock(nn.Module):
         return self.main(x)
 
 
-class DeepFamQ_CRC_Res(nn.Module):
+class DeepFamQ_CRC(nn.Module):
     def __init__(
         self,
-        conv_out_dim: int = 512,
+        conv_out_dim: int = 320,
         conv_kernel_size: List = [9, 15],
-        pool_size: int = 1,
+        pool_size: int = 3,
         lstm_hidden_dim: int = 320,
         fc_hidden_dim: int = 64,
         dropout1: float = 0.2,
@@ -43,23 +43,16 @@ class DeepFamQ_CRC_Res(nn.Module):
     ):
         super().__init__()
         pool_out_len = int(1 + ((110 - pool_size) / pool_size))
+        pool_out_len = int(1 + ((pool_out_len - pool_size) / pool_size))
         fc_input_dim = lstm_hidden_dim * 2 * pool_out_len // 2
         
         conv_each_dim = int(conv_out_dim / len(conv_kernel_size))
         self.conv_blocks1 = nn.ModuleList([ConvBlock(4, conv_each_dim, k, pool_size, dropout1) for k in conv_kernel_size])
-        self.oneconv1 = nn.Sequential(
-            nn.Conv1d(in_channels=conv_out_dim, out_channels=lstm_hidden_dim, kernel_size=1),
-            nn.ReLU()
-        )
         
-        self.lstm = nn.LSTM(input_size=lstm_hidden_dim, hidden_size=lstm_hidden_dim, bidirectional=True)
-        self.oneconv2 = nn.Sequential(
-            nn.Conv1d(in_channels=lstm_hidden_dim * 2, out_channels=lstm_hidden_dim, kernel_size=1),
-            nn.ReLU()
-        )
+        self.lstm = nn.LSTM(input_size=conv_out_dim, hidden_size=lstm_hidden_dim, bidirectional=True)
         
         conv_each_dim = int(lstm_hidden_dim / len(conv_kernel_size))
-        self.conv_blocks2 = nn.ModuleList([ConvBlock(lstm_hidden_dim, conv_each_dim, k, pool_size, dropout1) for k in conv_kernel_size])
+        self.conv_blocks2 = nn.ModuleList([ConvBlock(lstm_hidden_dim * 2, conv_each_dim, k, pool_size, 0) for k in conv_kernel_size])
         
         self.fc = nn.Sequential(
             nn.Flatten(),
@@ -77,22 +70,20 @@ class DeepFamQ_CRC_Res(nn.Module):
         conv_outs = []
         for conv in self.conv_blocks1:
             conv_outs.append(conv(x))
-        x = torch.cat(conv_outs, dim=1) 
-        x = self.oneconv1(x)
+        x = torch.cat(conv_outs, dim=1)
         
         x = rearrange(x, "N C L -> L N C")
-        out, (h, c) = self.lstm(x) 
-        x = out + repeat(x, "L N C -> L N (tile C)", tile=2)
+        x, (h, c) = self.lstm(x)
         
         x = rearrange(x, "L N C -> N C L")
-        x = self.oneconv2(x)
         
         conv_outs = []
         for conv in self.conv_blocks2:
             conv_outs.append(conv(x))
-        x = x + torch.cat(conv_outs, dim=1)
+        x = torch.cat(conv_outs, dim=1)
         
         x = self.fc(x)
-        x = x.squeeze()
+        x = rearrange(x, "N 1 -> N")
         
         return x
+    
